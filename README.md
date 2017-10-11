@@ -1,1 +1,2 @@
-# CS4400-Internet-Applications
+# CS4400 Internet Applications
+### Assignment 1: Chat Server
