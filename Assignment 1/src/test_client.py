@@ -1,26 +1,29 @@
 import socket
 
+from protocol_messages import ProtocolMessages
+
 
 def run():
     print("test_client running")
     HOST, PORT = "localhost", 3000
-    data = "Hello World"
+    data = ProtocolMessages.KILL.value
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     try:
         # Connect to server and send data
         sock.connect((HOST, PORT))
-        sock.sendall(bytes(data + "\n", "utf-8"))
+        sock.sendall(data.encode())
 
         # Receive data from the server and shut down
-        received = str(sock.recv(1024), "utf-8")
-    finally:
+        received = sock.recv(1024).decode()
+        print("Sent: {}".format(data))
+        print("Received: {}".format(received))
+
+    except Exception as e:
+        print(e.with_traceback())
         sock.close()
 
-    print("Sent:     {}".format(data))
-    print("Received: {}".format(received))
-    sock.close()
 
-
-run()
+if __name__ == "__main__":
+    run()

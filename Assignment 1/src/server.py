@@ -1,4 +1,10 @@
 import socketserver
+import threading
+
+import protocol_responses as pr_resp
+from protocol_messages import ProtocolMessages as pr_msg
+
+HOST, PORT = "127.0.0.1", 3000
 
 
 class MyTCPHandler(socketserver.BaseRequestHandler):
@@ -12,22 +18,35 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 
     def handle(self):
         # self.request is the TCP socket connected to the client
-        self.data = self.request.recv(1024).strip()
-        print("{} wrote: ".format(self.client_address))
+        self.data = self.request.recv(1024).decode()
+        print("{} wrote: ".format(self.client_address[0]))
         print(self.data)
-        self.request.sendall(self.data.upper())
+
+        response = pr_resp.findResponse(self.data)
+
+        if response is None:
+            self.server.shutdown()
+            return
+        print("Server responds with:\n{}".format(response))
+
+        self.request.sendall(response.encode())
 
 
 def run():
     try:
-        print("Anton running")
-        HOST, PORT = "localhost", 3000
-        socketserver.TCPServer.allow_reuse_address = True
-        server = socketserver.TCPServer((HOST, PORT), MyTCPHandler)
+        print("Server running")
+
+        # Prevent TCP TIME_WAIT
+        socketserver.ThreadingTCPServer.allow_reuse_address = True
+        server = socketserver.ThreadingTCPServer((HOST, PORT), MyTCPHandler)
         server.serve_forever()
 
     except KeyboardInterrupt:
-        server.server_close()
+        pass
+
+    print("\nClosing server")
+    server.server_close()
 
 
-run()
+if __name__ == "__main__":
+    run()
