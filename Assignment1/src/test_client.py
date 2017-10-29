@@ -6,7 +6,7 @@ from protocol_messages import ProtocolMessages
 def run():
     print("test_client running")
     HOST, PORT = "localhost", 3000
-    data = ProtocolMessages.KILL.value
+    data = ProtocolMessages.HELLO.value
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -21,7 +21,6 @@ def run():
         print("Received: {}".format(received))
 
     except Exception as e:
-        print(e.with_traceback())
         sock.close()
 
 
