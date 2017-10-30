@@ -8,25 +8,25 @@ was valid
 HELLO = "HELO( \w+)*\n"
 KILL = "KILL_SERVICE\n"
 ERROR = "INVALID_MESSAGE\n"
-JOIN = "JOIN_CHATROOM: (\w+)\nCLIENT_IP: 0\nPORT: 0\nCLIENT_NAME: (\w+)\n"
+JOIN = "JOIN_CHATROOM: (\w+\s*)+\nCLIENT_IP: 0\nPORT: 0\nCLIENT_NAME: (\w+\s*)+\n"
 LEAVE = "LEAVE_CHATROOM: (\w+)\nJOIN_ID: (\w+)\nCLIENT_NAME: (\w+)\n"
-DISCONNECT = "DISCONNECT: 0\nPORT: 0\nCLIENT_NAME: (\w+)\n"
-MESSAGE = "CHAT: (\d+)\nJOIN_ID: (\w+)\nCLIENT_NAME: (\w+)\nMESSAGE: (\w+ )*\n\n"
+DISCONNECT = "DISCONNECT: 0\nPORT: 0\nCLIENT_NAME: (\w+\s*)+\n"
+MESSAGE = "CHAT: (\d+)\nJOIN_ID: (\w+)\nCLIENT_NAME: (\w+\s*)+\nMESSAGE: (\w+ )*\n\n"
 
 def check_hello(message):
-    return match(HELLO, message)
+    return True if match(HELLO, message) is not None else False
 
 def check_kill(message):
-    return match(KILL, message)
+    return True if match(KILL, message) is not None else False
 
 def check_join(message):
-    return match(JOIN, message)
+    return True if match(JOIN, message) is not None else False
 
 def check_leave(message):
-    return match(LEAVE, message)
+    return True if match(LEAVE, message) is not None else False
 
 def check_disconnect(message):
-    return match(DISCONNECT, message)
+    return True if match(DISCONNECT, message) is not None else False
 
 def parse_join(message):
     split_message = message.split('\n')
