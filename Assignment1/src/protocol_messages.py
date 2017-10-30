@@ -28,6 +28,9 @@ def check_leave(message):
 def check_disconnect(message):
     return match(DISCONNECT, message)
 
-def validMessage(message):
-    if check_hello(message) or check_kill(message):
-        return True
+def parse_join(message):
+    split_message = message.split('\n')
+    chatroom_name = split_message[0].split(':')[1].strip()
+    client_ip = split_message[1].split(':')[1].strip()
+    client_name = split_message[3].split(':').strip()
+    return chatroom_name, client_ip, client_name
