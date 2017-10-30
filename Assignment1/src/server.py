@@ -1,11 +1,13 @@
+import socket
 import socketserver
 import threading
 
-import protocol_responses as pr_resp
-from protocol_messages import ProtocolMessages as pr_msg
+from protocol_responses import *
+from protocol_messages import *
+from client import Client
 
 HOST, PORT = "127.0.0.1", 3000
-
+CHATROOMS = []
 
 class MyTCPHandler(socketserver.BaseRequestHandler):
     """
@@ -13,24 +15,34 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 
     It is instantiated once per connection to the server, and must
     override the handle() method to communicate with the client.
-
     """
+    client = None
 
     def handle(self):
-        # self.request is the TCP socket connected to the client
-        self.data = self.request.recv(1024).decode()
-        print("{} wrote: ".format(self.client_address[0]))
-        print(self.data)
+        try:
+            while True:
+                # self.request is the TCP socket connected to the client
+                message = self.request.recv(1024).decode()
+                if check_hello(message):
+                    response = respond_to_hello(message)
 
-        response = pr_resp.findResponse(self.data)
+                elif check_kill(message):
+                    self.server.shutdown()
+                    return
 
-        if response is None:
-            self.server.shutdown()
+                elif check_join(message):
+
+                elif check_leave(message):
+
+                elif check_disconnect(message):
+
+                
+                print("Server responds with:\n{}".format(response))
+                self.request.sendall(response.encode())
+
+        except BrokenPipeError:
+            print("Unexpected Disconnect")
             return
-        print("Server responds with:\n{}".format(response))
-
-        self.request.sendall(response.encode())
-
 
 def run():
     try:

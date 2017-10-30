@@ -1,12 +1,12 @@
 import socket
 
-from protocol_messages import ProtocolMessages
+import protocol_messages as pr_msg
 
 
 def run():
     print("test_client running")
     HOST, PORT = "localhost", 3000
-    data = ProtocolMessages.HELLO.value
+    data = "HELO BASE_SERVER\n"
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -19,6 +19,9 @@ def run():
         received = sock.recv(1024).decode()
         print("Sent: {}".format(data))
         print("Received: {}".format(received))
+
+        while True:
+            pass
 
     except Exception as e:
         sock.close()
