@@ -32,5 +32,5 @@ def parse_join(message):
     split_message = message.split('\n')
     chatroom_name = split_message[0].split(':')[1].strip()
     client_ip = split_message[1].split(':')[1].strip()
-    client_name = split_message[3].split(':').strip()
+    client_name = split_message[3].split(':')[1].strip()
     return chatroom_name, client_ip, client_name
