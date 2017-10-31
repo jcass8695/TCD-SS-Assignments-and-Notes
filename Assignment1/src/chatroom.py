@@ -1,5 +1,6 @@
 from protocol_responses import respond_to_message
 
+
 class Chatroom:
     def __init__(self, room_id, room_name):
         self.room_id = room_id
@@ -7,26 +8,30 @@ class Chatroom:
         self.connected_clients = {}
 
     def add_client(self, new_client):
-        if new_client.join_id not in self.connected_clients.keys():
+        if new_client.join_id not in self.connected_clients:
             self.connected_clients[new_client.join_id] = new_client
+            self.broadcast_message(new_client.join_id, new_client.handle)
             return 0
         else:
             return -1
 
     def remove_client(self, join_id):
-        if join_id in self.connected_clients.keys():
+        if join_id in self.connected_clients:
             del self.connected_clients[join_id]
             return 0
         else:
             return -1
 
-
     def get_client(self, join_id):
-        return self.connected_clients.get(join_id, None)
+        return self.connected_clients.get(join_id, -1)
 
-    def broadcast_message(self, broadcaster_join_id, broadcaster_handle, message):
+    def broadcast_message(self, broadcaster_join_id, broadcaster_handle):
         for join_id, client in self.connected_clients:
             if join_id == broadcaster_join_id:
                 continue
             else:
-                client.socket.sendall(respond_to_message(self.room_id, broadcaster_handle, message))
+                client.socket.sendall(respond_to_message(
+                    self.room_id,
+                    broadcaster_handle,
+                    "{} joined the room".format(broadcaster_handle)
+                ))
