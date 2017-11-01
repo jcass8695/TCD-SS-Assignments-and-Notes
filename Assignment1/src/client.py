@@ -3,8 +3,7 @@ class Client:
         self.handle = handle
         self.join_id = join_id
         self.socket = socket
-        self.port = socket.getsockname()[1]
-        self.socket.serve_forever()
+        print("Client {} created".format(handle))
 
     def __str__(self):
         return self.join_id
