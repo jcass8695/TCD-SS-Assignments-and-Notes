@@ -61,8 +61,8 @@ def client_thread(client_socket, client_address):
                 elif check_leave(message):
                     process_leave_req(client, message)
 
-                # elif check_message(message):
-                #     process_message_req(client, message)
+                elif check_message(message):
+                    process_message_req(client, message)
 
                 # elif check_disconnect(message):
                 #     process_disconnect_req(client, message)
@@ -76,7 +76,7 @@ def client_thread(client_socket, client_address):
             print("Exception in client_thread")
             print(e)
             break
-
+# TODO: Remove clients from chatrooms on unexpected disconect
     client_socket.close()
 
 
@@ -138,6 +138,23 @@ def process_leave_req(client, message):
 
     CHATROOMS_MAP[room_id].remove_client(client)
     client.socket.sendall(respond_to_leave(room_id, client.join_id))
+
+
+def process_message_req(client, message):
+    room_id, join_id, message_text = parse_message(message)
+    if room_id not in CHATROOMS_MAP.keys():
+        client.socket.sendall(respond_with_error(2))
+        return
+
+    elif join_id not in CHATROOMS_MAP[room_id].connected_clients.keys():
+        client.socket.sendall(respond_with_error(4))
+        return
+
+    CHATROOMS_MAP[room_id].broadcast_message(
+        client.join_id,
+        client.handle,
+        message_text
+    )
 
 
 if __name__ == "__main__":
