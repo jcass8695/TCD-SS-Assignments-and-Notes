@@ -9,7 +9,10 @@ RESPONSE_TABLE = {
     pr_msg.HELLO: "HELO{}\nIP:{}\nPort:{}\nStudentID:14320816\n",
     pr_msg.JOIN: "JOINED_CHATROOM: {}\nSERVER_IP: {}\nPORT: {}\nROOM_REF: {}\nJOIN_ID: {}\n",
     pr_msg.LEAVE: "LEFT_CHATROOM: {}\nJOIN_ID: {}\n",
-    pr_msg.MESSAGE: "CHAT: {}\nCLIENT_NAME: {}\nMESSAGE: {}\n\n"
+    pr_msg.MESSAGE: "CHAT: {}\nCLIENT_NAME: {}\nMESSAGE: {}\n\n",
+    pr_msg.ERROR1: "Invalid Join Request",
+    pr_msg.ERROR2: "Invalid Leave Request Chatroom doesn't exist",
+    pr_msg.ERROR3: "Invalid Leave Request Join ID's don't match doesn't exist"
 }
 
 
@@ -34,5 +37,9 @@ def respond_to_message(room_id, client_name, message):
     return str(RESPONSE_TABLE.get(pr_msg.MESSAGE)).format(room_id, client_name, message).encode()
 
 
-def respond_with_error():
-    return str(RESPONSE_TABLE.get(pr_msg.ERROR)).encode()
+def respond_with_error(error_id):
+    if error_id is 1:
+        return str(RESPONSE_TABLE.get(pr_msg.ERROR1)).encode()
+
+    elif error_id is 2:
+        return str(RESPONSE_TABLE.get(pr_msg.ERROR2)).encode()
