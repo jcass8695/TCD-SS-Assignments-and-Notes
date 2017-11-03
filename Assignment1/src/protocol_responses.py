@@ -11,8 +11,9 @@ RESPONSE_TABLE = {
     pr_msg.LEAVE: "LEFT_CHATROOM: {}\nJOIN_ID: {}\n",
     pr_msg.MESSAGE: "CHAT: {}\nCLIENT_NAME: {}\nMESSAGE: {}\n\n",
     pr_msg.ERROR1: "Invalid Join Request",
-    pr_msg.ERROR2: "Invalid Leave Request Chatroom doesn't exist",
-    pr_msg.ERROR3: "Invalid Leave Request Join ID's don't match doesn't exist"
+    pr_msg.ERROR2: "Invalid Request: Chatroom doesn't exist",
+    pr_msg.ERROR3: "Invalid Request: Join ID's don't match doesn't exist",
+    pr_msg.ERROR4: "Invalid Request: User is not in this chatroom"
 }
 
 
