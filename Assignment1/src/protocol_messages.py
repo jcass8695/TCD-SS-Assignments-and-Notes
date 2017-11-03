@@ -52,3 +52,11 @@ def parse_leave(message):
     room_id = int(split_message[0].split(':')[1].strip())
     join_id = int(split_message[1].split(':')[1].strip())
     return room_id, join_id
+
+
+def parse_message(message):
+    split_message = message.split('\n')
+    room_id = int(split_message[0].split(':')[1].strip())
+    join_id = int(split_message[1].split(':')[1].strip())
+    message_text = '\n'.join(split_message[3:]).split(':')[1].strip()
+    return room_id, join_id, message_text
