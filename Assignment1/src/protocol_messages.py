@@ -11,7 +11,7 @@ ERROR = "INVALID_MESSAGE\n"
 JOIN = "JOIN_CHATROOM: (\w+\s*)+\nCLIENT_IP: 0\nPORT: 0\nCLIENT_NAME: (\w+\s*)+\n"
 LEAVE = "LEAVE_CHATROOM: (\w+)\nJOIN_ID: (\w+)\nCLIENT_NAME: (\w+)\n"
 DISCONNECT = "DISCONNECT: 0\nPORT: 0\nCLIENT_NAME: (\w+\s*)+\n"
-MESSAGE = "CHAT: (\d+)\nJOIN_ID: (\w+)\nCLIENT_NAME: (\w+\s*)+\nMESSAGE: (\w+ )*\n\n"
+MESSAGE = "CHAT: \d+\nJOIN_ID: \d+\nCLIENT_NAME: (\w+\s*)+\nMESSAGE: (\w+(!|\.|\?)*\s*)+\n\n"
 
 
 def check_hello(message):
@@ -32,6 +32,10 @@ def check_leave(message):
 
 def check_disconnect(message):
     return True if match(DISCONNECT, message) is not None else False
+
+
+def check_message(message):
+    return True if match(MESSAGE, message) is not None else False
 
 
 def parse_join(message):
