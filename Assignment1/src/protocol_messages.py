@@ -9,7 +9,7 @@ HELLO = "HELO( \w+)*\n"
 KILL = "KILL_SERVICE\n"
 ERROR = "INVALID_MESSAGE\n"
 JOIN = "JOIN_CHATROOM: (\w+\s*)+\nCLIENT_IP: 0\nPORT: 0\nCLIENT_NAME: (\w+\s*)+\n"
-LEAVE = "LEAVE_CHATROOM: \d+\nJOIN_ID: \d+\nCLIENT_NAME: (\w+)\n"
+LEAVE = "LEAVE_CHATROOM: \d+\nJOIN_ID: \d+\nCLIENT_NAME: (\w+\s*)+\n"
 DISCONNECT = "DISCONNECT: 0\nPORT: 0\nCLIENT_NAME: (\w+\s*)+\n"
 MESSAGE = "CHAT: \d+\nJOIN_ID: \d+\nCLIENT_NAME: (\w+\s*)+\nMESSAGE: (\w+(!|\.|\?)*\s*)+\n\n"
 

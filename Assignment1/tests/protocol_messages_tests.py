@@ -2,7 +2,7 @@ import unittest
 import sys
 sys.path.append('../src')
 
-from protocol_messages import check_hello, check_kill, check_join, check_message, parse_join, parse_leave
+from protocol_messages import check_hello, check_kill, check_join, check_leave, check_message, parse_join, parse_leave
 
 
 class TestValidations(unittest.TestCase):
@@ -52,6 +52,25 @@ class TestValidations(unittest.TestCase):
 
         self.assertFalse(check_join(
             "JOIN_CHATROOM: chatroom_1\nCLIENT_IP: 0\nPORT:0\nCLIENT_NAME: client_1\n"))
+
+    def test_leave(self):
+        self.assertTrue(check_leave(
+            "LEAVE_CHATROOM: 123\nJOIN_ID: 456\nCLIENT_NAME: client_1\n"))
+
+        self.assertTrue(check_leave(
+            "LEAVE_CHATROOM: 123\nJOIN_ID: 456\nCLIENT_NAME: client 1\n"))
+
+        self.assertTrue(check_leave(
+            "LEAVE_CHATROOM: 123\nJOIN_ID: 456\nCLIENT_NAME: mad max 21\n"))
+
+        self.assertTrue(check_leave(
+            "LEAVE_CHATROOM: 123\nJOIN_ID: 456\nCLIENT_NAME: mad_max_21\n"))
+
+        self.assertFalse(check_leave(
+            "LEAVE_CHATROOM: room_1\nJOIN_ID: 456\nCLIENT_NAME: client_1\n"))
+
+        self.assertFalse(check_leave(
+            "LEAVE_CHATROOM: 123\nJOIN_ID: fourfivesix\nCLIENT_NAME: client_1\n"))
 
     def test_message(self):
         self.assertTrue(check_message(
