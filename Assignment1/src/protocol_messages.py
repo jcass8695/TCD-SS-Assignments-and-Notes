@@ -9,7 +9,7 @@ HELLO = "HELO( \w+)*\n"
 KILL = "KILL_SERVICE\n"
 ERROR = "INVALID_MESSAGE\n"
 JOIN = "JOIN_CHATROOM: (\w+\s*)+\nCLIENT_IP: 0\nPORT: 0\nCLIENT_NAME: (\w+\s*)+\n"
-LEAVE = "LEAVE_CHATROOM: (\w+)\nJOIN_ID: (\w+)\nCLIENT_NAME: (\w+)\n"
+LEAVE = "LEAVE_CHATROOM: \d+\nJOIN_ID: \d+\nCLIENT_NAME: (\w+)\n"
 DISCONNECT = "DISCONNECT: 0\nPORT: 0\nCLIENT_NAME: (\w+\s*)+\n"
 MESSAGE = "CHAT: \d+\nJOIN_ID: \d+\nCLIENT_NAME: (\w+\s*)+\nMESSAGE: (\w+(!|\.|\?)*\s*)+\n\n"
 
@@ -43,3 +43,10 @@ def parse_join(message):
     chatroom_name = split_message[0].split(':')[1].strip()
     client_name = split_message[3].split(':')[1].strip()
     return chatroom_name, client_name
+
+
+def parse_leave(message):
+    split_message = message.split('\n')
+    room_id = int(split_message[0].split(':')[1].strip())
+    join_id = int(split_message[1].split(':')[1].strip())
+    return room_id, join_id

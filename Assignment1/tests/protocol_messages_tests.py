@@ -2,7 +2,7 @@ import unittest
 import sys
 sys.path.append('../src')
 
-from protocol_messages import check_hello, check_kill, check_join, check_message, parse_join
+from protocol_messages import check_hello, check_kill, check_join, check_message, parse_join, parse_leave
 
 
 class TestValidations(unittest.TestCase):
@@ -97,6 +97,12 @@ class TestValidations(unittest.TestCase):
             "JOIN_CHATROOM: chatroom 1\nCLIENT_IP: 0\nPORT: 0\nCLIENT_NAME: client 1\n")
         self.assertEqual(chatroom_name, "chatroom 1")
         self.assertEqual(client_name, "client 1")
+
+    def test_parse_leave(self):
+        room_id, join_id = parse_leave(
+            "LEAVE_CHATROOM: 543\nJOIN_ID: 211\nCLIENT_NAME: client_1\n")
+        self.assertEqual(room_id, 543)
+        self.assertEqual(join_id, 211)
 
 
 if __name__ == '__main__':
