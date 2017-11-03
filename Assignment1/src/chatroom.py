@@ -11,9 +11,12 @@ class Chatroom:
         if new_client.join_id not in self.connected_clients.keys():
             self.connected_clients[new_client.join_id] = new_client
             self.broadcast_message(new_client.join_id, new_client.handle)
-            print("{} Joined chatroom {}".format(
-                new_client.handle, self.room_name)
-            )
+            print("{} Joined {}".format(new_client.handle, self.room_name))
+            return True
+        else:
+            print("{} Already Joined {}".format(
+                new_client.handle, self.room_name))
+            return False
 
     def remove_client(self, join_id):
         if join_id in self.connected_clients:
@@ -28,14 +31,12 @@ class Chatroom:
     def broadcast_message(self, broadcaster_join_id, broadcaster_handle):
         for join_id, client in self.connected_clients.items():
             if join_id == broadcaster_join_id:
+                print("This is the broadcaster")
                 continue
             else:
+                print("This is not the broadcaster")
                 client.socket.sendall(respond_to_message(
                     self.room_id,
                     broadcaster_handle,
-                    respond_to_message(
-                        self.room_id,
-                        client.handle,
-                        "{} Joined".format(client.handle)
-                    )
+                    "{} Joined".format(broadcaster_handle)
                 ))
