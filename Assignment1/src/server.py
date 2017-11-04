@@ -69,8 +69,7 @@ def client_thread(client_socket, client_address):
                             client_address
                         )
 
-                    else:
-                        process_join_req(client, message)
+                    process_join_req(client, message)
 
                 elif check_leave(message):
                     process_leave_req(client, message)
@@ -122,7 +121,7 @@ def process_join_req(client, message):
             room_name,
             room_id,
             client.join_id,
-            client.address
+            HOST
         ))
 
     else:
