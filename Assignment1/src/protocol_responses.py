@@ -18,7 +18,7 @@ RESPONSE_TABLE = {
 }
 
 
-def respond_to_hello(message, ip="127.0.0.1", port="3000"):
+def respond_to_hello(message, ip, port="3000"):
     # Check if there's extra text beside the 'HELO'
     if len(message.split(' ', maxsplit=1)) > 1:
         extra_text = ' ' + message.split(' ', maxsplit=1)[1].strip()
@@ -27,7 +27,7 @@ def respond_to_hello(message, ip="127.0.0.1", port="3000"):
         return str(RESPONSE_TABLE.get(pr_msg.HELLO)).format('', ip, port).encode()
 
 
-def respond_to_join(chatroom_name, room_id, join_id, port, ip="127.0.0.1"):
+def respond_to_join(chatroom_name, room_id, join_id, ip, port=3000):
     return str(RESPONSE_TABLE.get(pr_msg.JOIN)).format(chatroom_name, ip, port, room_id, join_id).encode()
 
 

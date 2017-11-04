@@ -1,11 +1,10 @@
 import socket
-import protocol_messages as pr_msg
-import time
+import sys
 
 
 def run():
-    HOST, PORT = "localhost", 3000
-    data = "JOIN_CHATROOM: dragon\nCLIENT_IP: 0\nPORT: 0\nCLIENT_NAME: night_hawk\n"
+    HOST, PORT = sys.argv[1], 3000
+    data = "KILL_SERVICE\n"
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((HOST, PORT))

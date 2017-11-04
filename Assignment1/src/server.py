@@ -1,12 +1,12 @@
 import socket
-import select
+import sys
 import threading
 from protocol_responses import *
 from protocol_messages import *
 from client import Client
 from chatroom import Chatroom
 
-HOST = "127.0.0.1"
+HOST = sys.argv[1]
 JOIN_PORT = 3000
 BUFFER_SIZE = 4096
 
@@ -47,14 +47,30 @@ def run():
 
 def client_thread(client_socket, client_address):
     # Create new Client object
-    client = new_client_setup(client_socket, client_address)
+    client = None
     while True:
         try:
-            message = client.socket.recv(BUFFER_SIZE).decode()
+            message = client_socket.recv(BUFFER_SIZE).decode()
             if message:
                 print("Server received:\n{}".format(message))
-                if check_join(message):
-                    process_join_req(client, message)
+                if check_hello(message):
+                    process_helo_req(client_socket, message)
+
+                elif check_kill(message):
+                    print("Killing server")
+                    sys.exit()
+
+                elif check_join(message):
+                    # New connection
+                    if client is None:
+                        client = new_client_setup(
+                            message,
+                            client_socket,
+                            client_address
+                        )
+
+                    else:
+                        process_join_req(client, message)
 
                 elif check_leave(message):
                     process_leave_req(client, message)
@@ -73,38 +89,26 @@ def client_thread(client_socket, client_address):
                 break
 
         except Exception as e:
-            print(e)
+            print(e.with_traceback())
             break
 
     client_socket.close()
 
 
-def new_client_setup(client_socket, client_address):
-    join_req = client_socket.recv(BUFFER_SIZE).decode()
-    if check_join(join_req):
-        room_name, client_name = parse_join(join_req)
-        room_id = hash(room_name) % 255
-        join_id = hash(client_name) % 255
+def new_client_setup(join_req, client_socket, client_address):
+    _, client_name = parse_join(join_req)
+    join_id = hash(client_name) % 255
 
-        new_client = Client(
-            client_name,
-            join_id,
-            client_socket,
-            client_address
-        )
+    return Client(
+        client_name,
+        join_id,
+        client_socket,
+        client_address
+    )
 
-        if room_id not in CHATROOMS_MAP.keys():
-            CHATROOMS_MAP[room_id] = Chatroom(room_id, room_name)
 
-        CHATROOMS_MAP[room_id].add_client(new_client)
-        client_socket.sendall(respond_to_join(
-            room_name,
-            room_id,
-            join_id,
-            client_address[1]
-        ))
-
-        return new_client
+def process_helo_req(client_socket, message):
+    client_socket.sendall(respond_to_hello(message, HOST))
 
 
 def process_join_req(client, message):
