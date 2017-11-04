@@ -9,22 +9,20 @@ def run():
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((HOST, PORT))
-    count = 1
-    while True:
-        try:
-            # Connect to server and send data
-            sock.sendall(data.encode())
-            # Receive data from the server and shut down
-            received = sock.recv(1024).decode()
-            print(count)
-            print("Sent: {}".format(data))
-            print("Received: {}".format(received))
-            count += 1
-            time.sleep(10)
+    try:
+        # Connect to server and send data
+        sock.sendall(data.encode())
+        print("Sent:\n{}".format(data))
 
-        except KeyboardInterrupt:
-            sock.close()
-            break
+        while True:
+            received = sock.recv(1024).decode()
+            if received is None:
+                break
+
+            print("Received:\n{}".format(received))
+
+    except (KeyboardInterrupt, BrokenPipeError):
+        sock.close()
 
 
 if __name__ == "__main__":

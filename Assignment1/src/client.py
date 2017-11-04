@@ -1,8 +1,9 @@
 class Client:
-    def __init__(self, handle, join_id, socket):
+    def __init__(self, handle, join_id, socket, address):
         self.handle = handle
         self.join_id = join_id
         self.socket = socket
+        self.address = address
         print("Client {} created".format(handle))
 
     def __str__(self):

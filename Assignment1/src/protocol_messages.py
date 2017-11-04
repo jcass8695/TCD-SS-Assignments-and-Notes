@@ -11,6 +11,7 @@ ERROR1 = "ERROR1"
 ERROR2 = "ERROR2"
 ERROR3 = "ERROR3"
 ERROR4 = "ERROR4"
+ERROR5 = "ERROR5"
 JOIN = "JOIN_CHATROOM: (\w+\s*)+\nCLIENT_IP: 0\nPORT: 0\nCLIENT_NAME: (\w+\s*)+\n"
 LEAVE = "LEAVE_CHATROOM: \d+\nJOIN_ID: \d+\nCLIENT_NAME: (\w+\s*)+\n"
 DISCONNECT = "DISCONNECT: 0\nPORT: 0\nCLIENT_NAME: (\w+\s*)+\n"
@@ -61,3 +62,8 @@ def parse_message(message):
     join_id = int(split_message[1].split(':')[1].strip())
     message_text = '\n'.join(split_message[3:]).split(':')[1].strip()
     return room_id, join_id, message_text
+
+
+def parse_disconnect(message):
+    split_message = message.split('\n')
+    return split_message[2].split(':')[1].strip()

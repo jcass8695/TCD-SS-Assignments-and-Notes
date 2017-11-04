@@ -44,8 +44,6 @@ def run():
     server_socket.close()
     print("Server shutting down")
 
-# TODO: Implement Leave, Disconnect, and Message requests
-
 
 def client_thread(client_socket, client_address):
     # Create new Client object
@@ -64,19 +62,20 @@ def client_thread(client_socket, client_address):
                 elif check_message(message):
                     process_message_req(client, message)
 
-                # elif check_disconnect(message):
-                #     process_disconnect_req(client, message)
+                elif check_disconnect(message):
+                    print(CHATROOMS_MAP)
+                    process_disconnect_req(client, message)
+                    break
 
             else:
                 print("Client closed connection unexpectedly")
-                # process_disconnect(client, message)
+                process_disconnect_req(client, message)
                 break
 
         except Exception as e:
-            print("Exception in client_thread")
             print(e)
             break
-# TODO: Remove clients from chatrooms on unexpected disconect
+
     client_socket.close()
 
 
@@ -155,6 +154,18 @@ def process_message_req(client, message):
         client.handle,
         message_text
     )
+
+
+def process_disconnect_req(client, message):
+    client_name = parse_disconnect(message)
+    if client_name is not client.handle:
+        client.socket.sendall(respond_with_error(5))
+        return
+
+    # Remove client from all of it's connected chatrooms
+    for _, chatroom in CHATROOMS_MAP.items():
+        print(chatroom.room_name)
+        chatroom.remove_client(client)
 
 
 if __name__ == "__main__":

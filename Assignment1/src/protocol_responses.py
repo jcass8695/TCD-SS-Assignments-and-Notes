@@ -12,8 +12,9 @@ RESPONSE_TABLE = {
     pr_msg.MESSAGE: "CHAT: {}\nCLIENT_NAME: {}\nMESSAGE: {}\n\n",
     pr_msg.ERROR1: "Invalid Join Request",
     pr_msg.ERROR2: "Invalid Request: Chatroom doesn't exist",
-    pr_msg.ERROR3: "Invalid Request: Join ID's don't match doesn't exist",
-    pr_msg.ERROR4: "Invalid Request: User is not in this chatroom"
+    pr_msg.ERROR3: "Invalid Request: Join ID's don't match",
+    pr_msg.ERROR4: "Invalid Request: User is not in this chatroom",
+    pr_msg.ERROR5: "invalid Request: Client handles dont match"
 }
 
 
