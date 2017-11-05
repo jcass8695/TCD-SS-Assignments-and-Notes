@@ -30,7 +30,7 @@ def respond_to_hello(message, ip, port="3000"):
     return response
 
 
-def respond_to_join(chatroom_name, room_id, join_id, ip, port=3000):
+def respond_to_join(chatroom_name, room_id, join_id, ip, port):
     response = str(RESPONSE_TABLE.get(pr_msg.JOIN)).format(chatroom_name, ip, port, room_id, join_id).encode()
     print("Server responded with:\n{}".format(response.decode()))
     return response
