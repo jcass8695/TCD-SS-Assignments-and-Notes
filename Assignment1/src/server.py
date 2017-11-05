@@ -46,7 +46,6 @@ def run():
 
 
 def client_thread(client_socket, client_address):
-    # Create new Client object
     client = None
     while True:
         try:
@@ -61,7 +60,7 @@ def client_thread(client_socket, client_address):
                     sys.exit()
 
                 elif check_join(message):
-                    # New connection
+                    # Create new Client object
                     if client is None:
                         client = new_client_setup(
                             message,
@@ -97,7 +96,6 @@ def client_thread(client_socket, client_address):
 def new_client_setup(join_req, client_socket, client_address):
     _, client_name = parse_join(join_req)
     join_id = hash(client_name) % 255
-
     return Client(
         client_name,
         join_id,
@@ -121,7 +119,8 @@ def process_join_req(client, message):
             room_name,
             room_id,
             client.join_id,
-            HOST
+            HOST,
+            client.address[1]
         ))
 
     else:
