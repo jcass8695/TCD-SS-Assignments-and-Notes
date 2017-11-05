@@ -123,6 +123,11 @@ def process_join_req(client, message):
             client.address[1]
         ))
 
+        CHATROOMS_MAP[room_id].broadcast_message(
+            client.handle,
+            "{} Joined {}".format(client.handle, CHATROOMS_MAP[room_id].room_name)
+        )
+
     else:
         client.socket.sendall(respond_with_error(1))
 

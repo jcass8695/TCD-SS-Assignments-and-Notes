@@ -12,10 +12,6 @@ class Chatroom:
     def add_client(self, new_client):
         if new_client.join_id not in self.connected_clients.keys():
             self.connected_clients[new_client.join_id] = new_client
-            self.broadcast_message(
-                new_client.handle,
-                "{} Joined {}".format(new_client.handle, self.room_name))
-
             print("{} Joined {}".format(new_client.handle, self.room_name))
             return True
         else:
