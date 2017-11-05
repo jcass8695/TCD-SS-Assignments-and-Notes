@@ -172,7 +172,7 @@ def process_disconnect_req(client, message):
         return
 
     # Remove client from all of it's connected chatrooms
-    for _, chatroom in CHATROOMS_MAP.items():
+    for _, chatroom in sorted(CHATROOMS_MAP.items()):
         chatroom.broadcast_message(
             client.handle,
             "{} Left {}".format(client.handle, chatroom.room_name)
