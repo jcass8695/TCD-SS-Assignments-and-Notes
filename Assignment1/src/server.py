@@ -167,7 +167,7 @@ def process_message_req(client, message):
 
 def process_disconnect_req(client, message):
     client_name = parse_disconnect(message)
-    if client_name is not client.handle:
+    if client_name != client.handle:
         client.socket.sendall(respond_with_error(5))
         return
 
