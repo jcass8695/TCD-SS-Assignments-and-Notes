@@ -46,11 +46,24 @@ def respond_to_message(room_id, client_name, message):
     return response
 
 def respond_with_error(error_id):
+    response = ''
     if error_id is 1:
         response = str(RESPONSE_TABLE.get(pr_msg.ERROR1)).encode()
 
     elif error_id is 2:
         response = str(RESPONSE_TABLE.get(pr_msg.ERROR2)).encode()
+
+    elif error_id is 3:
+        response = str(RESPONSE_TABLE.get(pr_msg.ERROR2)).encode()
+
+    elif error_id is 4:
+        response = str(RESPONSE_TABLE.get(pr_msg.ERROR2)).encode()
+
+    elif error_id is 5:
+        response = str(RESPONSE_TABLE.get(pr_msg.ERROR2)).encode()
+
+    else:
+        response = "Invalid request, Error".encode()
 
     print("Server responded with:\n{}".format(response.decode()))
     return response
