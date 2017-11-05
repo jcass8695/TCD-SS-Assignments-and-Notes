@@ -2,7 +2,7 @@ import unittest
 import sys
 sys.path.append('../src')
 
-from protocol_messages import check_hello, check_kill, check_join, check_leave, check_disconnect, check_message, parse_join, parse_leave, parse_message
+from protocol_messages import check_hello, check_kill, check_join, check_leave, check_disconnect, check_message, parse_join, parse_leave, parse_disconnect, parse_message
 
 
 class TestValidations(unittest.TestCase):
@@ -104,6 +104,16 @@ class TestValidations(unittest.TestCase):
         room_id, join_id = parse_leave("LEAVE_CHATROOM: 543\nJOIN_ID: 211\nCLIENT_NAME: client_1\n")
         self.assertEqual(room_id, 543)
         self.assertEqual(join_id, 211)
+
+    def test_parse_disconnect(self):
+        client_handle = parse_disconnect("DISCONNECT: 0\nPORT: 0\nCLIENT_NAME: client_1\n")
+        self.assertEqual(client_handle, "client_1")
+        client_handle = parse_disconnect("DISCONNECT: 0\nPORT: 0\nCLIENT_NAME: client 1\n")
+        self.assertEqual(client_handle, "client 1")
+        client_handle = parse_disconnect("DISCONNECT: 0\nPORT: 0\nCLIENT_NAME: client_1_2\n")
+        self.assertEqual(client_handle, "client_1_2")
+        client_handle = parse_disconnect("DISCONNECT: 0\nPORT: 0\nCLIENT_NAME: mad max 21\n")
+        self.assertEqual(client_handle, "mad max 21")
 
     def test_parse_message(self):
         room_id, join_id, message_text = parse_message("CHAT: 122\nJOIN_ID: 32\nCLIENT_NAME: client_1\nMESSAGE: Hey, how's it going?\n\n")
