@@ -83,7 +83,7 @@ def client_thread(client_socket, client_address):
 
             else:
                 print("Client closed connection unexpectedly")
-                process_disconnect_req(client, message)
+                # process_disconnect_req(client, message)
                 break
 
         except Exception as e:
@@ -161,7 +161,6 @@ def process_message_req(client, message):
         return
 
     CHATROOMS_MAP[room_id].broadcast_message(
-        client.join_id,
         client.handle,
         message_text
     )
