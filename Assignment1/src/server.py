@@ -142,9 +142,13 @@ def process_leave_req(client, message):
         client.socket.sendall(respond_with_error(3))
         return
 
-    CHATROOMS_MAP[room_id].remove_client(client)
     client.socket.sendall(respond_to_leave(room_id, client.join_id))
+    CHATROOMS_MAP[room_id].broadcast_message(
+        client.handle,
+        "{} Left {}".format(client.handle, CHATROOMS_MAP[room_id].room_name)
+    )
 
+    CHATROOMS_MAP[room_id].remove_client(client)
 
 def process_message_req(client, message):
     room_id, join_id, message_text = parse_message(message)

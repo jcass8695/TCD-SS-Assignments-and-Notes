@@ -22,10 +22,6 @@ class Chatroom:
     def remove_client(self, client):
         if client.join_id in self.connected_clients.keys():
             del self.connected_clients[client.join_id]
-            self.broadcast_message(
-                client.handle,
-                "{} Left {}".format(client.handle, self.room_name))
-
             print("{} Left {}".format(client.handle, self.room_name))
 
     def get_client(self, join_id):
