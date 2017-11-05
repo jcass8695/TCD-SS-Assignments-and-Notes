@@ -77,7 +77,6 @@ def client_thread(client_socket, client_address):
                     process_message_req(client, message)
 
                 elif check_disconnect(message):
-                    print(CHATROOMS_MAP)
                     process_disconnect_req(client, message)
                     break
 
@@ -174,8 +173,14 @@ def process_disconnect_req(client, message):
 
     # Remove client from all of it's connected chatrooms
     for _, chatroom in CHATROOMS_MAP.items():
-        print(chatroom.room_name)
+        chatroom.broadcast_message(
+            client.handle,
+            "{} Left {}".format(client.handle, chatroom.room_name)
+        )
+
         chatroom.remove_client(client)
+
+    print("{} Disconnected from server".format(client.handle))
 
 
 if __name__ == "__main__":
