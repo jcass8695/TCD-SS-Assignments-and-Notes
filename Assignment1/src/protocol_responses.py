@@ -28,23 +28,23 @@ def respond_to_hello(message, ip, port="3000"):
     else:
         response = str(RESPONSE_TABLE.get(pr_msg.HELLO)).format('', ip, port).encode()
 
-    print("{}\n{}".format(datetime.utcfromtimestamp(time()).strftime("%Y-%m-%d %H:%M:%S"), response.decode()))
+    print("{}\n{}".format(datetime.utcfromtimestamp(time()).strftime("%Y-%m-%d %H:%M:%S:%f"), response.decode()))
     return response
 
 
 def respond_to_join(chatroom_name, room_id, join_id, ip, port):
     response = str(RESPONSE_TABLE.get(pr_msg.JOIN)).format(chatroom_name, ip, port, room_id, join_id).encode()
-    print("{}\n{}".format(datetime.utcfromtimestamp(time()).strftime("%Y-%m-%d %H:%M:%S"), response.decode()))
+    print("{}\n{}".format(datetime.utcfromtimestamp(time()).strftime("%Y-%m-%d %H:%M:%S:%f"), response.decode()))
     return response
 
 def respond_to_leave(room_id, join_id):
     response = str(RESPONSE_TABLE.get(pr_msg.LEAVE)).format(room_id, join_id).encode()
-    print("{}\n{}".format(datetime.utcfromtimestamp(time()).strftime("%Y-%m-%d %H:%M:%S"), response.decode()))
+    print("{}\n{}".format(datetime.utcfromtimestamp(time()).strftime("%Y-%m-%d %H:%M:%S:%f"), response.decode()))
     return response
 
 def respond_to_message(room_id, client_name, message):
     response = str(RESPONSE_TABLE.get(pr_msg.MESSAGE)).format(room_id, client_name, message).encode()
-    print("{}\n{}".format(datetime.utcfromtimestamp(time()).strftime("%Y-%m-%d %H:%M:%S"), response.decode()))
+    print("{}\n{}".format(datetime.utcfromtimestamp(time()).strftime("%Y-%m-%d %H:%M:%S:%f"), response.decode()))
     return response
 
 def respond_with_error(error_id):
@@ -67,5 +67,5 @@ def respond_with_error(error_id):
     else:
         response = "Invalid request, Error".encode()
 
-    print("{}\n{}".format(datetime.utcfromtimestamp(time()).strftime("%Y-%m-%d %H:%M:%S"), response.decode()))
+    print("{}\n{}".format(datetime.utcfromtimestamp(time()).strftime("%Y-%m-%d %H:%M:%S:%f"), response.decode()))
     return response
