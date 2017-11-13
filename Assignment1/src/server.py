@@ -182,12 +182,13 @@ def process_disconnect_req(client, message):
     with CHATROOMS_MAP_MUTEX:
         # Remove client from all of it's connected chatrooms
         for _, chatroom in sorted(CHATROOMS_MAP.items()):
-            chatroom.broadcast_message(
-                client.handle,
-                "{} Left {}".format(client.handle, chatroom.room_name)
-            )
+            if chatroom.client_is_connected(client):
+                chatroom.broadcast_message(
+                    client.handle,
+                    "{} Left {}".format(client.handle, chatroom.room_name)
+                )
 
-            chatroom.remove_client(client)
+                chatroom.remove_client(client)
 
     print("{} Disconnected from server".format(client.handle))
 

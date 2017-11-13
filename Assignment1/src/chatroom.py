@@ -11,8 +11,7 @@ class Chatroom:
         self.mutex = Lock()
 
     def add_client(self, new_client):
-        try:
-            self.mutex.acquire()
+        with self.mutex:
             if new_client.join_id not in self.connected_clients.keys():
                 self.connected_clients[new_client.join_id] = new_client
                 print("{} Joined {}".format(new_client.handle, self.room_name))
@@ -21,21 +20,17 @@ class Chatroom:
                 print("{} Already Joined {}".format(
                     new_client.handle, self.room_name))
                 return False
-        finally:
-            self.mutex.release()
+
 
     def remove_client(self, client):
-        try:
-            self.mutex.acquire()    
+        with self.mutex:
             if client.join_id in self.connected_clients.keys():
                 del self.connected_clients[client.join_id]
                 print("{} Left {}".format(client.handle, self.room_name))
-        finally:
-            self.mutex.release()
+
 
     def broadcast_message(self, broadcaster_handle, message):
-        try:
-            self.mutex.acquire()
+        with self.mutex:
             for _, client in self.connected_clients.items():
                 print("> {}".format(client.handle))
                 client.socket.sendall(respond_to_message(
@@ -43,5 +38,7 @@ class Chatroom:
                     broadcaster_handle,
                     message
                 ))
-        finally:
-            self.mutex.release()
+
+    def client_is_connected(self, client):
+        with self.mutex:
+            return client.join_id in self.connected_clients.keys()
