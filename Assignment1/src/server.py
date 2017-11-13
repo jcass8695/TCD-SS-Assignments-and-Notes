@@ -55,7 +55,7 @@ def client_thread(client_socket, client_address):
         try:
             message = client_socket.recv(BUFFER_SIZE).decode()
             if message:
-                print("Server received:\n{}".format(message))
+                print("< server\n{}\n{}".format(datetime.utcfromtimestamp(time()).strftime("%Y-%m-%d %H:%M:%S"), message))
                 if check_hello(message):
                     process_helo_req(client_socket, message)
 
