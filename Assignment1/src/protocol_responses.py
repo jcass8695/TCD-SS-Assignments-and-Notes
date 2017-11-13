@@ -1,3 +1,4 @@
+from time import time
 import protocol_messages as pr_msg
 """
 Predefined responses that the server will use to respond
@@ -65,5 +66,5 @@ def respond_with_error(error_id):
     else:
         response = "Invalid request, Error".encode()
 
-    print("Server responded with:\n{}".format(response.decode()))
+    print("{}\n{}".format(time(), response.decode()))
     return response
