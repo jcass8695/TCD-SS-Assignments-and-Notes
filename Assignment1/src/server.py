@@ -10,11 +10,14 @@ HOST = sys.argv[1]
 JOIN_PORT = 3000
 BUFFER_SIZE = 4096
 BACKLOG = 5
+
 # Map of join_id's to Client objects
 CLIENTS_MAP = {}
+CLIENTS_MAP_MUTEX = threading.Lock()
 
 # Map of room_id's to Chatroom objects
 CHATROOMS_MAP = {}
+CHATROOMS_MAP_MUTEX = threading.Lock()
 
 
 def run():
@@ -38,7 +41,8 @@ def run():
 
         except Exception as e:
             print("Exception on server")
-            print(e)
+            if e is not KeyboardInterrupt:
+                print(e)
             break
 
     server_socket.close()
@@ -82,11 +86,10 @@ def client_thread(client_socket, client_address):
 
             else:
                 print("Client closed connection unexpectedly")
-                # process_disconnect_req(client, message)
                 break
 
-        except Exception as e:
-            print(e.with_traceback())
+        except Exception:
+            print("Client closed connection")
             break
 
     client_socket.close()
@@ -95,6 +98,8 @@ def client_thread(client_socket, client_address):
 def new_client_setup(join_req, client_socket, client_address):
     _, client_name = parse_join(join_req)
     join_id = hash(client_name) % 255
+    print(client_socket)
+    print(client_address)
     return Client(
         client_name,
         join_id,
@@ -110,59 +115,62 @@ def process_helo_req(client_socket, message):
 def process_join_req(client, message):
     room_name, _ = parse_join(message)
     room_id = hash(room_name) % 255
-    if room_id not in CHATROOMS_MAP.keys():
-        CHATROOMS_MAP[room_id] = Chatroom(room_id, room_name)
+    with CHATROOMS_MAP_MUTEX:
+        if room_id not in CHATROOMS_MAP.keys():
+            CHATROOMS_MAP[room_id] = Chatroom(room_id, room_name)
 
-    if CHATROOMS_MAP[room_id].add_client(client):
-        client.socket.sendall(respond_to_join(
-            room_name,
-            room_id,
-            client.join_id,
-            HOST,
-            client.address[1]
-        ))
+        if CHATROOMS_MAP[room_id].add_client(client):
+            client.socket.sendall(respond_to_join(
+                room_name,
+                room_id,
+                client.join_id,
+                HOST,
+                JOIN_PORT
+            ))
 
-        CHATROOMS_MAP[room_id].broadcast_message(
-            client.handle,
-            "{} Joined {}".format(client.handle, CHATROOMS_MAP[room_id].room_name)
-        )
+            CHATROOMS_MAP[room_id].broadcast_message(
+                client.handle,
+                "{} Joined {}".format(client.handle, CHATROOMS_MAP[room_id].room_name)
+            )
 
-    else:
-        client.socket.sendall(respond_with_error(1))
+        else:
+            client.socket.sendall(respond_with_error(1))
 
 
 def process_leave_req(client, message):
     room_id, join_id = parse_leave(message)
-    if room_id not in CHATROOMS_MAP.keys():
-        client.socket.sendall(respond_with_error(2))
-        return
+    with CHATROOMS_MAP_MUTEX:
+        if room_id not in CHATROOMS_MAP.keys():
+            client.socket.sendall(respond_with_error(2))
+            return
 
-    elif join_id != client.join_id:
-        client.socket.sendall(respond_with_error(3))
-        return
+        elif join_id != client.join_id:
+            client.socket.sendall(respond_with_error(3))
+            return
 
-    client.socket.sendall(respond_to_leave(room_id, client.join_id))
-    CHATROOMS_MAP[room_id].broadcast_message(
-        client.handle,
-        "{} Left {}".format(client.handle, CHATROOMS_MAP[room_id].room_name)
-    )
+        client.socket.sendall(respond_to_leave(room_id, client.join_id))
+        CHATROOMS_MAP[room_id].broadcast_message(
+            client.handle,
+            "{} Left {}".format(client.handle, CHATROOMS_MAP[room_id].room_name)
+        )
 
-    CHATROOMS_MAP[room_id].remove_client(client)
+        CHATROOMS_MAP[room_id].remove_client(client)
 
 def process_message_req(client, message):
     room_id, join_id, message_text = parse_message(message)
-    if room_id not in CHATROOMS_MAP.keys():
-        client.socket.sendall(respond_with_error(2))
-        return
+    with CHATROOMS_MAP_MUTEX:
+        if room_id not in CHATROOMS_MAP.keys():
+            client.socket.sendall(respond_with_error(2))
+            return
 
-    elif join_id not in CHATROOMS_MAP[room_id].connected_clients.keys():
-        client.socket.sendall(respond_with_error(4))
-        return
+        elif join_id not in CHATROOMS_MAP[room_id].connected_clients.keys():
+            client.socket.sendall(respond_with_error(4))
+            return
 
-    CHATROOMS_MAP[room_id].broadcast_message(
-        client.handle,
-        message_text
-    )
+        CHATROOMS_MAP[room_id].broadcast_message(
+            client.handle,
+            message_text
+        )
 
 
 def process_disconnect_req(client, message):
@@ -171,14 +179,15 @@ def process_disconnect_req(client, message):
         client.socket.sendall(respond_with_error(5))
         return
 
-    # Remove client from all of it's connected chatrooms
-    for _, chatroom in sorted(CHATROOMS_MAP.items()):
-        chatroom.broadcast_message(
-            client.handle,
-            "{} Left {}".format(client.handle, chatroom.room_name)
-        )
+    with CHATROOMS_MAP_MUTEX:
+        # Remove client from all of it's connected chatrooms
+        for _, chatroom in sorted(CHATROOMS_MAP.items()):
+            chatroom.broadcast_message(
+                client.handle,
+                "{} Left {}".format(client.handle, chatroom.room_name)
+            )
 
-        chatroom.remove_client(client)
+            chatroom.remove_client(client)
 
     print("{} Disconnected from server".format(client.handle))
 
