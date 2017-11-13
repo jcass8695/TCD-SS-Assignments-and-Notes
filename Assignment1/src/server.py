@@ -181,7 +181,7 @@ def process_disconnect_req(client, message):
 
     with CHATROOMS_MAP_MUTEX:
         # Remove client from all of it's connected chatrooms
-        for _, chatroom in sorted(CHATROOMS_MAP.items()):
+        for _, chatroom in CHATROOMS_MAP.items():
             if chatroom.client_is_connected(client):
                 chatroom.broadcast_message(
                     client.handle,
