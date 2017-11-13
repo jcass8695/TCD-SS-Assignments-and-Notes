@@ -5,13 +5,14 @@ import time
 
 def run():
     HOST, PORT = "localhost", 3000
-    data1 = "JOIN_CHATROOM: dragon\nCLIENT_IP: 0\nPORT: 0\nCLIENT_NAME: polar_bear\n"
+    data1 = "JOIN_CHATROOM: chat_1\nCLIENT_IP: 0\nPORT: 0\nCLIENT_NAME: polar_bear\n"
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((HOST, PORT))
     try:
         # Connect to server and send data
         sock.sendall(data1.encode())
         print("Sent:\n{}".format(data1))
+        received = sock.recv(1024).decode()
         received = sock.recv(1024).decode()
         print("Received:\n{}".format(received))
 
