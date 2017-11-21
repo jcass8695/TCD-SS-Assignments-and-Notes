@@ -7,15 +7,15 @@ api = Api(app)
 
 class FileServer(Resource):
     def get(self):
-        with open('src/test.txt', 'r') as in_file:
-            file_str = in_file.read()
-        return file_str
+        with open('test.txt', 'r') as in_file:
+            file_text = in_file.read()
+        return {'file': file_text}
 
-    def put(self):
+    def post(self):
         new_text = request.form['data']
-        with open('src/test.txt', 'w') as out_file:
-            print(out_file.write(new_text + '\n'))
-        return 'write successful'
+        with open('test.txt', 'w') as out_file:
+            chars_written = out_file.write(new_text)
+        return {'file': chars_written}
 
 
 api.add_resource(FileServer, '/')
