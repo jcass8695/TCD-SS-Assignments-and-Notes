@@ -40,9 +40,7 @@ class DirectoryServerCreate(Resource):
             # Put the new file on the server with the least number of files
             target_machine_id = utils.find_least_loaded_server(MACHINE_LOAD)
             FILENAMES[filename] = (file_id, target_machine_id)
-            print(MACHINE_LOAD)
             MACHINE_LOAD[target_machine_id] += 1
-            print(MACHINE_LOAD)
             exists = False
         else:
             exists = True

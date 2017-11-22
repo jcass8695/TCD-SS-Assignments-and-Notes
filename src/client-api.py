@@ -18,9 +18,9 @@ def run():
 def open_file(filename):
     exists = utils.file_exists(filename)
     if not exists:
-        machine_id, file_id = utils.get_file_location(filename)
+        machine_address, file_id = utils.get_file_location(filename)
         requests.post(
-            utils.url_builder(machine_id[0], machine_id[1]),
+            utils.url_builder(machine_address[0], machine_address[1]),
             json={'fileid': file_id, 'data': ''}
         )
 
@@ -31,11 +31,11 @@ def open_file(filename):
 
 # Reads file from server
 def read(filename):
-    machine_id, file_id = utils.get_file_location(filename)
-    if machine_id is not None:
+    machine_address, file_id = utils.get_file_location(filename)
+    if machine_address is not None:
         payload = {'fileid': file_id}
         r = requests.get(
-            utils.url_builder(machine_id[0], machine_id[1]),
+            utils.url_builder(machine_address[0], machine_address[1]),
             params=payload
         )
 
@@ -47,10 +47,10 @@ def read(filename):
 
 # Sends text to file on server. Currently overwrites entire file
 def write(filename, changes=''):
-    machine_id, file_id = utils.get_file_location(filename)
-    if machine_id is not None:
+    machine_address, file_id = utils.get_file_location(filename)
+    if machine_address is not None:
         requests.post(
-            utils.url_builder(machine_id[0], machine_id[1]),
+            utils.url_builder(machine_address[0], machine_address[1]),
             json={'fileid': file_id, 'data': changes}
         )
     else:
