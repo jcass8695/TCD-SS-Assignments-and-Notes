@@ -17,6 +17,7 @@ class FileServer(Resource):
         filename = utils.convert_fileid(file_id)
         with open(filename, 'r') as in_file:
             file_text = in_file.read()
+
         return {'file': file_text}
 
     def post(self):
@@ -25,6 +26,7 @@ class FileServer(Resource):
         filename = utils.convert_fileid(file_id)
         with open(filename, 'w') as out_file:
             chars_written = out_file.write(new_text)
+
         return {'file': chars_written}
 
 
