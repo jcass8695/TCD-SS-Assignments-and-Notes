@@ -102,4 +102,4 @@ ENV/
 
 #vscode
 .vscode
-**/test.txt
+**.txt
