@@ -1,3 +1,4 @@
+import sys
 from flask import Flask, request
 from flask_restful import Resource, Api
 
@@ -21,4 +22,4 @@ class FileServer(Resource):
 api.add_resource(FileServer, '/')
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+    app.run(debug=True, port=int(sys.argv[1]) or 0)
