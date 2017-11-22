@@ -5,18 +5,23 @@ import utils
 
 def run():
     read('test')
+    write('test', 'This is a new test')
+    read('test')
 
 
 def read(filename):
-    payload = {'filename': filename}
-    r = requests.get('http://127.0.0.1:5000', params=payload)
-    r_text = r.json()
-    machine_id = r_text['machine_id']
-    machine_ip = machine_id[0]
-    machine_port = machine_id[1]
-    file_id = r_text['file_id']
+    machine_id, file_id = utils.get_file_location(filename)
+    r = requests.get(utils.url_builder(machine_id[0], machine_id[1]))
+    print(r.json()['file'])
 
-    r = requests.get(utils.url_builder(machine_ip, machine_port))
+
+def write(filename, changes):
+    machine_id, file_id = utils.get_file_location(filename)
+    r = requests.post(
+        utils.url_builder(machine_id[0], machine_id[1]),
+        data={'data': changes}
+    )
+
     print(r.json()['file'])
 
 
