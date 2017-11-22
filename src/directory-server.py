@@ -6,14 +6,16 @@ app = Flask(__name__)
 api = Api(app)
 
 MACHINES = {1: ('127.0.0.1', 5001)}
-FILENAMES = {'test': (1, 1)}
-parser = reqparse.RequestParser()
-parser.add_argument('filename')
+FILENAMES = {'test': (1, 1), 'loremipsum': (2, 1)}
 
 
 class DirectoryServer(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('filename')
+
     def get(self):
-        filename = parser.parse_args()['filename']
+        filename = self.parser.parse_args()['filename']
         if filename in FILENAMES.keys():
             file_id, machine_id = FILENAMES[filename]
             machine_address = MACHINES[machine_id] or None

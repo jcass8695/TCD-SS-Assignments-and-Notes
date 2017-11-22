@@ -13,3 +13,7 @@ def get_file_location(filename):
     file_id = r_text['file_id']
 
     return machine_id, file_id
+
+
+def convert_fileid(file_id):
+    return str(file_id) + '.txt'
