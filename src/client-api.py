@@ -3,15 +3,8 @@ import utils
 
 
 def run():
-    read('test')
-    read('loremipsum')
+    open_file('test')
     write('test', 'This is a new test')
-    write('loremipsum', 'Brand new lorem ipsum')
-    read('test')
-    read('loremipsum')
-    open_file('open_file_test')
-    read('open_file_test')
-    write('file_that_dont_exist')
 
 
 # Creates file on server if it doesn't already exist
@@ -46,15 +39,23 @@ def read(filename):
 
 
 # Sends text to file on server. Currently overwrites entire file
-def write(filename, changes=''):
-    machine_address, file_id = utils.get_file_location(filename)
-    if machine_address is not None:
-        requests.post(
-            utils.url_builder(machine_address[0], machine_address[1]),
-            json={'fileid': file_id, 'data': changes}
-        )
-    else:
-        print('{} not found'.format(filename))
+def write(filename, changes):
+    file_id = utils.get_file_id(filename)
+    if file_id is not None:
+        if utils.get_file_lock(file_id):
+            print('Got lock')
+            machine_address, _ = utils.get_file_location(filename)
+            if machine_address is not None:
+                requests.post(
+                    utils.url_builder(machine_address[0], machine_address[1]),
+                    json={'fileid': file_id, 'data': changes}
+                )
+
+                utils.release_file_lock(file_id)
+            else:
+                print('{} not found'.format(filename))
+        else:
+            print('Didn\'t get lock')
 
 
 if __name__ == '__main__':
