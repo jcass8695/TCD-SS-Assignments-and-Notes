@@ -1,8 +1,8 @@
 import requests
 
 
-def url_builder(ip, port):
-    return 'http://' + ip + ':' + str(port)
+def url_builder(ip, port, endpoints=''):
+    return 'http://' + ip + ':' + str(port) + '/' + endpoints
 
 
 def get_file_location(filename):

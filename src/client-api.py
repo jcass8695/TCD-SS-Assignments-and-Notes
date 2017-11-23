@@ -3,21 +3,21 @@ import utils
 
 
 def run():
-    # read('test')
-    # read('loremipsum')
-    # write('test', 'This is a new test')
-    # write('loremipsum', 'Brand new lorem ipsum')
     read('test')
     read('loremipsum')
-    # open_file('open_file_test')
-    # read('open_file_test')
-    # write('file_that_dont_exist')
+    write('test', 'This is a new test')
+    write('loremipsum', 'Brand new lorem ipsum')
+    read('test')
+    read('loremipsum')
+    open_file('open_file_test')
+    read('open_file_test')
+    write('file_that_dont_exist')
 
 
-# Creates file on server if it doesn't already exist, else nothing
+# Creates file on server if it doesn't already exist
 def open_file(filename):
-    exists = utils.file_exists(filename)
-    if not exists:
+    resp = requests.post('http://127.0.0.1:5000/', json={'filename': filename})
+    if resp.status_code == 200:
         machine_address, file_id = utils.get_file_location(filename)
         requests.post(
             utils.url_builder(machine_address[0], machine_address[1]),
