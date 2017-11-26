@@ -1,5 +1,5 @@
 from flask import Flask
-from flask_restful import Resource, Api, reqparse, abort, request
+from flask_restful import Resource, Api, abort
 
 app = Flask(__name__)
 api = Api(app)
@@ -9,47 +9,28 @@ LOCKED_FILES = {}
 
 
 class LockServer(Resource):
-    def __init__(self):
-        self.parser = reqparse.RequestParser()
-        self.parser.add_argument('fileid')
-        print(LOCKED_FILES)
-
-    def get(self):
-        fileid = int(self.parser.parse_args()['fileid'])
-        if fileid in LOCKED_FILES.keys():
-            locked = LOCKED_FILES[fileid]
-            print(locked)
-            if not locked:
-                locked = True
-                LOCKED_FILES[fileid] = True
-                print('Lock on {}'.format(fileid))
+    def put(self, file_id):
+        if file_id in LOCKED_FILES:
+            if not LOCKED_FILES[file_id]:
+                LOCKED_FILES[file_id] = True
+                print('Lock on {} taken'.format(file_id))
                 return {'lock': True}
 
             return {'lock': False}
         else:
-            print('abort')
-            abort(404)
+            LOCKED_FILES[file_id] = True
+            return {'lock': True}
 
-    def post(self):
-        fileid = request.get_json()['fileid']
-        if fileid not in LOCKED_FILES.keys():
-            print('New file added')
-            LOCKED_FILES[fileid] = False
-        else:
-            abort(404)
-
-    def delete(self):
-        fileid = request.get_json()['fileid']
-        if fileid in LOCKED_FILES.keys():
-            locked = LOCKED_FILES[fileid]
-            if locked:
-                LOCKED_FILES[fileid] = False
-                print('Lock on {} released'.format(fileid))
+    def delete(self, file_id):
+        if file_id in LOCKED_FILES:
+            if LOCKED_FILES[file_id]:
+                LOCKED_FILES[file_id] = False
+                print('Lock on {} released'.format(file_id))
         else:
             abort(404)
 
 
-api.add_resource(LockServer, '/')
+api.add_resource(LockServer, '/<int:file_id>')
 
 if __name__ == '__main__':
     app.run(debug=True, port=6000)

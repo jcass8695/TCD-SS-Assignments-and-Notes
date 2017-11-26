@@ -1,7 +1,6 @@
-import requests
 from flask import Flask
-from flask_restful import Resource, Api, reqparse, abort, request
-import utils
+from flask_restful import Resource, Api, reqparse, request
+import utils_server
 
 app = Flask(__name__)
 api = Api(app)
@@ -12,52 +11,47 @@ MACHINES = {}
 MACHINE_LOAD = {}
 # FileName: FileID
 FILE_NAMES = {}
-# FileID: FileAge
-# FILE_AGES = {1: 0, 2: 0}
 # FileID: MachineID
 FILE_LOCATIONS = {}
 
 
-class DirServer(Resource):
+# Returns file_id's and creates new File's
+class DirServerFile(Resource):
     def __init__(self):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('filename')
 
-    # Get location of requested file
+    # Get file_id of requested file
     def get(self):
         filename = self.parser.parse_args()['filename']
-        if filename in FILE_NAMES.keys():
-            file_id = FILE_NAMES[filename]
-            machine_id = FILE_LOCATIONS[file_id]
-            machine_address = MACHINES[machine_id]
-            return {'file_id': file_id, 'machine_id': machine_address}
-        else:
-            abort(404)
+        if filename not in FILE_NAMES:
+            return {'message': '{} does not exist, try opening it'.format(filename)}, 404
 
-    # Create new file mapping on server
+        return {'file_id': FILE_NAMES[filename]}
+
+    # Create new file listing
     def post(self):
-        filename = request.get_json()['filename']
-        if filename not in FILE_NAMES.keys():
-            file_id = len(FILE_NAMES) + 1
+        filename = self.parser.parse_args()['filename']
+        if filename in FILE_NAMES:
+            return {'message': '{} already exists, try reading from it'.format(filename)}, 400
 
-            # Put the new file on the server with the least number of files
-            target_machine_id = utils.find_least_loaded_server(MACHINE_LOAD)
-            FILE_NAMES[filename] = file_id
-            FILE_LOCATIONS[file_id] = target_machine_id
-            # FILE_AGES[file_id] = 0
-            MACHINE_LOAD[target_machine_id] += 1
-
-            # Notify Lock Server of this new file
-            r = requests.post(
-                'http://127.0.0.1:6000/',
-                json={'fileid': file_id}
-            )
-
-            if r.status_code == 404:
-                # TODO Take an action here
-                pass
         else:
-            abort(404)
+            file_id = len(FILE_NAMES)
+            FILE_NAMES[filename] = file_id
+            target_machine_id = utils_server.find_least_loaded_server(
+                MACHINE_LOAD)
+            FILE_LOCATIONS[file_id] = target_machine_id
+            return '', 201
+
+
+class DirServerLocate(Resource):
+    def get(self, file_id):
+        if file_id not in FILE_NAMES.values():
+            print('File location not found')
+            return {'message': '{} does not exist'.format(file_id)}, 404
+
+        machine_id = FILE_LOCATIONS[file_id]
+        return {'machine_address': MACHINES[machine_id]}, 200
 
 
 class NodeSetup(Resource):
@@ -78,22 +72,9 @@ class NodeSetup(Resource):
         print(MACHINE_LOAD)
 
 
-class FileId(Resource):
-    def __init__(self):
-        self.parser = reqparse.RequestParser()
-        self.parser.add_argument('filename')
-
-    def get(self):
-        filename = self.parser.parse_args()['filename']
-        if filename in FILE_NAMES.keys():
-            return {'fileid': FILE_NAMES[filename]}
-        else:
-            abort(404)
-
-
-api.add_resource(DirServer, '/')
+api.add_resource(DirServerFile, '/files')
+api.add_resource(DirServerLocate, '/files/<int:file_id>/locate')
 api.add_resource(NodeSetup, '/init')
-api.add_resource(FileId, '/fileid')
 
 if __name__ == '__main__':
     app.run(debug=True)

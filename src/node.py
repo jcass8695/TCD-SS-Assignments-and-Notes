@@ -3,8 +3,8 @@ import os
 import requests
 
 from flask import Flask, request
-from flask_restful import Resource, Api, reqparse
-import utils
+from flask_restful import Resource, Api
+import utils_server
 
 app = Flask(__name__)
 api = Api(app)
@@ -13,29 +13,23 @@ DS_ADDRESS = ('127.0.0.1', 5000)
 
 
 class FileServer(Resource):
-    def __init__(self):
-        self.parser = reqparse.RequestParser()
-        self.parser.add_argument('fileid')
-
-    def get(self):
-        file_id = self.parser.parse_args()['fileid']
-        filename = utils.convert_fileid(file_id)
+    def get(self, file_id):
+        filename = utils_server.convert_file_id(file_id)
         with open(filename, 'r') as in_file:
             file_text = in_file.read()
 
-        return {'file': file_text}
+        return {'file': file_text}, 200
 
-    def post(self):
-        file_id = request.get_json()['fileid']
+    def post(self, file_id):
         new_text = request.get_json()['data']
-        filename = utils.convert_fileid(file_id)
+        filename = utils_server.convert_file_id(file_id)
         with open(filename, 'w') as out_file:
-            chars_written = out_file.write(new_text)
+            out_file.write(new_text)
 
-        return {'file': chars_written}
+        return '', 204
 
 
-api.add_resource(FileServer, '/')
+api.add_resource(FileServer, '/<int:file_id>')
 
 if __name__ == '__main__':
     if len(sys.argv) == 3:
@@ -43,7 +37,7 @@ if __name__ == '__main__':
         if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
             print('Initing node')
             requests.post(
-                utils.url_builder(DS_ADDRESS[0], DS_ADDRESS[1], 'init'),
+                utils_server.url_builder(DS_ADDRESS[0], DS_ADDRESS[1], 'init'),
                 json={'ip': sys.argv[1], 'port': sys.argv[2]}
             )
 
