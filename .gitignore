@@ -102,4 +102,9 @@ ENV/
 
 #vscode
 .vscode
+
+# random
 **.txt
+
+# mongo
+/db

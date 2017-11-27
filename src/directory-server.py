@@ -1,9 +1,16 @@
 from flask import Flask
 from flask_restful import Resource, Api, reqparse, request
+from pymongo import MongoClient
 import utils_server
 
 app = Flask(__name__)
 api = Api(app)
+
+# DB stuff
+client = MongoClient('localhost', 7000)
+db = client.dirserver_database
+files = db.files_collection
+machines = db.machines_collection
 
 # MachineID: (MachineIP, MachinePORT)
 MACHINES = {}
@@ -13,6 +20,8 @@ MACHINE_LOAD = {}
 FILE_NAMES = {}
 # FileID: MachineID
 FILE_LOCATIONS = {}
+# FileID: FileAge
+FILE_AGE = {}
 
 
 # Returns file_id's and creates new File's
@@ -41,17 +50,38 @@ class DirServerFile(Resource):
             target_machine_id = utils_server.find_least_loaded_server(
                 MACHINE_LOAD)
             FILE_LOCATIONS[file_id] = target_machine_id
+            FILE_AGE[file_id] = 1
             return '', 201
 
 
 class DirServerLocate(Resource):
     def get(self, file_id):
-        if file_id not in FILE_NAMES.values():
-            print('File location not found')
-            return {'message': '{} does not exist'.format(file_id)}, 404
+        if file_id in FILE_LOCATIONS:
+            machine_id = FILE_LOCATIONS[file_id]
+            return {'machine_address': MACHINES[machine_id]}, 200
 
-        machine_id = FILE_LOCATIONS[file_id]
-        return {'machine_address': MACHINES[machine_id]}, 200
+        return {'message': '{} does not exist'.format(file_id)}, 404
+
+
+class DirServerAge(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('file_age')
+
+    def get(self, file_id):
+        if file_id in FILE_AGE:
+            print('File age: {}'.format(FILE_AGE[file_id]))
+            return {'file_age': FILE_AGE[file_id]}, 200
+
+        return utils_server.file_missing_error(file_id)
+
+    def put(self, file_id):
+        new_age = self.parser.parse_args()['file_age']
+        if file_id in FILE_AGE:
+            FILE_AGE[file_id] = new_age
+            return '', 204
+
+        return utils_server.file_missing_error(file_id)
 
 
 class NodeSetup(Resource):
@@ -74,6 +104,7 @@ class NodeSetup(Resource):
 
 api.add_resource(DirServerFile, '/files')
 api.add_resource(DirServerLocate, '/files/<int:file_id>/locate')
+api.add_resource(DirServerAge, '/files/<int:file_id>/age')
 api.add_resource(NodeSetup, '/init')
 
 if __name__ == '__main__':
