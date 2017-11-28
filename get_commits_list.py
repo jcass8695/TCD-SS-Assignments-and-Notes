@@ -1,17 +1,23 @@
 import requests
 
-commits_list = []
-resp = requests.get(
-    'https://api.github.com/repos/JCass45/CS4400-Internet-Applications-Chat-Server/commits')
+commit_list_url = 'https://api.github.com/repos/JCass45/CS4400-Internet-Applications-Chat-Server/commits'
 
+# Get list of commits
+commits_list = []
+commits_to_file_num = {}
+with open('github-token', 'r') as f:
+    token = f.read().split()[0]
+    payload = {'access_token': token}
+
+resp = requests.get(
+    'https://api.github.com/repos/JCass45/CS4400-Internet-Applications-Chat-Server/commits', params=payload)
 while 'next' in resp.links:
     for item in resp.json():
         commits_list.append(item['sha'])
 
-    print(resp.links['next']['url'])
-    resp = requests.get(resp.links['next']['url'])
+    resp = requests.get(resp.links['next']['url'], params=payload)
 
 for item in resp.json():
     commits_list.append(item['sha'])
 
-print(len(commits_list))
+print(commits_list)
