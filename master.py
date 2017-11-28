@@ -34,7 +34,7 @@ def get_commits():
     and fills the Job Queue
     '''
 
-    commit_list_url = 'https://api.github.com/repos/JCass45/TCD-JS-Assignments-and-Notes/commits'
+    commit_list_url = 'https://api.github.com/repos/JCass45/CS4400-Internet-Applications-Chat-Server/commits'
     with open('github-token', 'r') as f:
         token = f.read().split()[0]
         payload = {'access_token': token}
@@ -54,6 +54,10 @@ def get_commits():
 
 
 def calc_avg_cc():
+    '''
+    Calculate and print the average cyclomatic complexity for the repository
+    '''
+
     print('-----AVG CC: {}-----'.format(sum(CC) / len(CC)))
 
 
