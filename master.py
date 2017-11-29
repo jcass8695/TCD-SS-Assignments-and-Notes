@@ -12,20 +12,34 @@ JOB_QUEUE_LOCK = Lock()
 CC = []
 CC_LOCK = Lock()
 
+COMMIT_LIST_URL = 'https://api.github.com/repos/JCass45/CS4400-Internet-Applications-Repo-Complexity/commits'
+FILES_LIST_URL = 'https://api.github.com/repos/JCass45/CS4400-Internet-Applications-Repo-Complexity/git/trees/{}'
+
 
 class Master(Resource):
     def get(self):
         with JOB_QUEUE_LOCK:
-            return {'sha': JOB_QUEUE.popleft()}
+            try:
+                return {'sha': JOB_QUEUE.popleft()}
+
+            except IndexError:
+                return '', 204
 
     def put(self):
-        new_cc = int(request.form['cc'])
+        new_cc = float(request.form['cc'])
         with CC_LOCK:
             CC.append(new_cc)
             if len(CC) == TOTAL_COMMITS:
                 shutdown_server()
+                return '', 503
 
         return '', 204
+
+
+class NodeSetup(Resource):
+    def get(self):
+        print('New node joined')
+        return {'url': FILES_LIST_URL}
 
 
 def get_commits():
@@ -34,12 +48,11 @@ def get_commits():
     and fills the Job Queue
     '''
 
-    commit_list_url = 'https://api.github.com/repos/JCass45/CS4400-Internet-Applications-Chat-Server/commits'
     with open('github-token', 'r') as f:
         token = f.read().split()[0]
         payload = {'access_token': token}
 
-    resp = requests.get(commit_list_url, params=payload)
+    resp = requests.get(COMMIT_LIST_URL, params=payload)
 
     # Repositories with more than 30 commits are pagianated
     # and require additional requests
@@ -62,6 +75,10 @@ def calc_avg_cc():
 
 
 def shutdown_server():
+    '''
+    Snippet from flask-restful docs to shutdown a flask server
+    '''
+
     func = request.environ.get('werkzeug.server.shutdown')
     if func is None:
         raise RuntimeError('Not running with the Werkzeug Server')
@@ -69,11 +86,12 @@ def shutdown_server():
 
 
 api.add_resource(Master, '/')
+api.add_resource(NodeSetup, '/init')
 
 if __name__ == '__main__':
     get_commits()
     global TOTAL_COMMITS
     TOTAL_COMMITS = len(JOB_QUEUE)
     app.run(debug=False)
-    print('-----Shutting Down Server-----')
+    print('\n-----Shutting Down Server-----')
     calc_avg_cc()
