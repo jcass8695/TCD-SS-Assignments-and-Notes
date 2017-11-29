@@ -1,9 +1,9 @@
-import requests
 from re import match
 from pprint import pprint
+import requests
 
 
-files_list_url = 'https://api.github.com/repos/JCass45/CS4400-Internet-Applications/git/trees/{}'
+files_list_url = 'https://api.github.com/repos/JCass45/CS4400-Internet-Applications-Chat-Server/git/trees/{}'
 
 with open('github-token', 'r') as f:
     token = f.read().split()[0]
@@ -36,6 +36,8 @@ def get_files_for_sha(sha):
     for url in blob_urls.values():
         resp = requests.get(url, params=payload, headers=headers)
         files.append(resp.text)
+
+    print(files[0])
 
 
 def is_code_file(filename):
