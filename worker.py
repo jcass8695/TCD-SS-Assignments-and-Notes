@@ -8,6 +8,14 @@ from radon.cli import Config
 
 
 class Worker:
+    '''
+    A Worker calculates the average CC for a given commit in a Github repo
+
+    The Master issues each Worker with a repo URL upon instantiation, and a
+    commit SHA each time it asks for work. The Worker performs CC analysis on
+    every file in the given commit and returns the average value to the Master.
+    The Worker asks for work forever until the list of commits has been exhausted
+    '''
     master_url = 'http://127.0.0.1:5000/'
     node_setup_url = 'http://127.0.0.1:5000/init'
 
@@ -28,6 +36,13 @@ class Worker:
         self.files_list_url = requests.get(self.node_setup_url).json()['url']
 
     def do_work(self):
+        '''
+        Worker continuously asks Master for work until all work has been exhausted
+
+        Worker is told to finish either when the Job Queue on the Masters end is empty
+        or this Worker was the last to submit it's work.
+        '''
+
         while not self.finished:
             sha = self.get_work()
             if sha is None:
@@ -41,10 +56,20 @@ class Worker:
             print(avg_cc)
 
     def get_token(self):
+        '''Opens Github Personal Auth token securely'''
+
         with open('github-token', 'r') as f:
             return f.read().split()[0]
 
     def get_work(self):
+        '''
+        GET a commit SHA from the Master
+
+        Worker asks Master for a commit SHA. Any response code
+        other than a 200 means the Job Queue is finished and Worker
+        should terminate.
+        '''
+
         resp = requests.get(self.master_url)
         if resp.status_code == 200:
             return resp.json()['sha']
@@ -52,6 +77,13 @@ class Worker:
         self.finished = True
 
     def get_file_tree(self, sha):
+        '''
+        Recursively GET the file tree for a given commit SHA
+
+        The file tree contains information on all of the directories
+        and files (Blobs) in the given commit.
+        '''
+
         payload = {
             'recursive': 'true',
             'access_token': self.token
@@ -66,6 +98,11 @@ class Worker:
         return resp.json()['tree']
 
     def get_files(self, file_tree):
+        '''
+        GET file contents of every Blob in the file tree and write
+        to a temporary file
+        '''
+
         os.makedirs('tmp')
         blob_urls = []
         for item in file_tree:
@@ -80,6 +117,14 @@ class Worker:
                 tmp_file.write(resp.text)
 
     def get_average_cc(self):
+        '''
+        Calculate the CC of every file in the tmp directory of Blobs
+
+        CCHarvester returns a block of metrics for each function, class and method
+        in a given file in dict format. CC is contained in this dict and is totalled
+        for the file. Tmp directory is cleaned up afterwards
+        '''
+
         results = CCHarvester(self.cc_path, self.cc_config)._to_dicts()
         if results == {}:
             rmtree('tmp')
@@ -97,10 +142,17 @@ class Worker:
         return total_cc / len(results)
 
     def return_work_result(self, avg_cc):
+        ''' Update Master with CC of latest commit'''
+
         if requests.put(self.master_url, data={'cc': avg_cc}).status_code == 503:
             self.finished = True
 
     def is_py_file(self, filename):
+        '''
+        Used to ensure CC is calculated on Python files only
+
+        Radon only supports evaluation of Python files
+        '''
         return True if match('.*\.py', filename) is not None else False
 
 
