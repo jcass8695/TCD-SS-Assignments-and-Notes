@@ -16,8 +16,8 @@ class Worker:
     every file in the given commit and returns the average value to the Master.
     The Worker asks for work forever until the list of commits has been exhausted
     '''
-    master_url = 'http://192.168.43.27:5000/'
-    node_setup_url = 'http://192.168.43.271:5000/init'
+    master_url = 'http://34.241.97.168:5000/'
+    node_setup_url = 'http://34.241.97.168:5000/init'
 
     cc_path = ['./tmp']
     cc_config = Config(

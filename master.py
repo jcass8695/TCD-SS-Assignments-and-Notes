@@ -96,6 +96,6 @@ api.add_resource(NodeSetup, '/init')
 if __name__ == '__main__':
     get_commits()
     TOTAL_COMMITS = len(JOB_QUEUE)
-    app.run(debug=False)
+    app.run(host='0.0.0.0', port=5000, debug=False)
     print('\n-----Shutting Down Server-----')
     calc_avg_cc()
