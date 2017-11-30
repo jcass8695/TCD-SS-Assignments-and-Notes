@@ -134,7 +134,11 @@ class Worker:
         for filename in results.values():
             file_cc = 0
             for block in filename:
-                file_cc += block['complexity']
+                try:
+                    file_cc += block['complexity']
+
+                except TypeError:
+                    print("CC failed, file in script format with no classes/functions")
 
             total_cc += file_cc
 
