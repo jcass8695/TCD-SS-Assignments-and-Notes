@@ -98,7 +98,7 @@ def calc_avg_cc():
     ''' Calculate and print the average cyclomatic complexity for the repository '''
     global CC
 
-    print('-----AVG CC: {0:0.2f}-----'.format(sum(CC) / len(CC)))
+    print('-----AVG CC: {0:0.2f}-----'.format(CC / CC_COUNT))
 
 
 def shutdown_server():
