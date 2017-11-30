@@ -10,10 +10,11 @@ api = Api(app)
 
 JOB_QUEUE = deque()
 JOB_QUEUE_LOCK = Lock()
-CC = []
+CC = 0
+CC_COUNT = 0
 CC_LOCK = Lock()
-COMMIT_LIST_URL = 'https://api.github.com/repos/JCass45/CS4400-Internet-Applications-Repo-Complexity/commits'
-FILES_LIST_URL = 'https://api.github.com/repos/JCass45/CS4400-Internet-Applications-Repo-Complexity/git/trees/{}'
+COMMIT_LIST_URL = 'https://api.github.com/repos/geekcomputers/Python/commits'
+FILES_LIST_URL = 'https://api.github.com/repos/geekcomputers/Python/git/trees/{}'
 TOTAL_COMMITS = 0
 TOTAL_WORKERS = 0
 TOTAL_WORKERS_LOCK = Lock()
@@ -38,13 +39,15 @@ class Master(Resource):
 
     def put(self):
         global CC
+        global CC_COUNT
         global CC_LOCK
         global TOTAL_COMMITS
 
         new_cc = float(request.form['cc'])
         with CC_LOCK:
-            CC.append(new_cc)
-            if len(CC) == TOTAL_COMMITS:
+            CC += new_cc
+            CC_COUNT += 1
+            if CC_COUNT == TOTAL_COMMITS:
                 shutdown_server()
                 return '', 503
 
