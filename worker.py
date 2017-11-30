@@ -53,7 +53,7 @@ class Worker:
             avg_cc = self.get_average_cc()
             self.return_work_result(avg_cc)
             print('SHA: {}'.format(sha))
-            print(avg_cc)
+            print('{0:0.2f}'.format(avg_cc))
 
     def get_token(self):
         '''Opens Github Personal Auth token securely'''
