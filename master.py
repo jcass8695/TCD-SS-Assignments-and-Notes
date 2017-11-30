@@ -116,7 +116,10 @@ if __name__ == '__main__':
     start = time()
     app.run(host='0.0.0.0', port=5000, debug=False)
     end = time()
+    delta = end - start
     print('Workers used: {}'.format(TOTAL_WORKERS))
-    print('Time elapsed: {0:0.2f}s'.format(end - start))
+    print('Time elapsed: {0:0.2f}s'.format(delta))
     print('\n-----Shutting Down Server-----')
     calc_avg_cc()
+    with open('results.txt', 'a') as results:
+        results.write('Workers: {}\nTime: {}\n'.format(TOTAL_WORKERS, delta))
