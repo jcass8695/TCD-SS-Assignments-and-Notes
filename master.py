@@ -13,8 +13,8 @@ JOB_QUEUE_LOCK = Lock()
 CC = 0
 CC_COUNT = 0
 CC_LOCK = Lock()
-COMMIT_LIST_URL = 'https://api.github.com/repos/geekcomputers/Python/commits'
-FILES_LIST_URL = 'https://api.github.com/repos/geekcomputers/Python/git/trees/{}'
+COMMIT_LIST_URL = 'https://api.github.com/repos/JCass45/CS4400-Internet-Applications-Chat-Server/commits'
+FILES_LIST_URL = 'https://api.github.com/repos/JCass45/CS4400-Internet-Applications-Chat-Server/git/trees/{}'
 TOTAL_COMMITS = 0
 TOTAL_WORKERS = 0
 TOTAL_WORKERS_LOCK = Lock()
@@ -70,8 +70,8 @@ class NodeSetup(Resource):
 
 def get_commits():
     '''
-    Retrieves SHA's for every commit in the CS4400 Repo Complexity repository by Jack Cassidy,
-    and fills the Job Queue
+    Retrieves SHA's for every commit in my Internet Apps Chat Server repository that has 56 commits
+    and 7 python files, and fills the Job Queue
     '''
     global COMMIT_LIST_URL
     global JOB_QUEUE
@@ -90,6 +90,7 @@ def get_commits():
 
         resp = requests.get(resp.links['next']['url'], params=payload)
 
+    print(resp.json())
     for item in resp.json():
         JOB_QUEUE.append(item['sha'])
 
