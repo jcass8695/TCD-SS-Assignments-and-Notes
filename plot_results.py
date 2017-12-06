@@ -24,7 +24,7 @@ def plot_results():
     pp.subplot(111)
     pp.title('Workers vs Time')
     pp.xlabel('Workers')
-    pp.ylabel('Time')
+    pp.ylabel('Time(s)')
     pp.plot(x, y)
     pp.show()
 
