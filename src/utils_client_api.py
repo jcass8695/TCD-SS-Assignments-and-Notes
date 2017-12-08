@@ -15,15 +15,14 @@ def write_to_node(machine_address, file_id, data):
 
 
 def read_from_node(machine_address, file_id):
-    if machine_address is not None:
-        resp = requests.get(url_builder(
-            machine_address[0],
-            machine_address[1],
-            file_id
-        ))
+    resp = requests.get(url_builder(
+        machine_address[0],
+        machine_address[1],
+        file_id
+    ))
 
-        # Returns the text currently in the file on the fileserver
-        return resp.json()['file'].strip()
+    # Returns the text currently in the file on the fileserver
+    return resp.json()['file'].strip()
 
 
 def url_builder(ip, port, endpoints=''):
@@ -36,7 +35,7 @@ def get_file_location(file_id):
     )
 
     if resp.status_code == 200:
-        return resp.json()['machine_address']
+        return (resp.json()['machine_ip'], resp.json()['machine_port'])
 
     else:
         print(resp.json()['message'])

@@ -1,16 +1,14 @@
 from flask import Flask
 from flask_restful import Resource, Api, reqparse, request
-from pymongo import MongoClient
+from pymongo import MongoClient, ASCENDING
+from bson.objectid import ObjectId
+from pprint import pprint
 import utils_server
 
 app = Flask(__name__)
 api = Api(app)
-
-# DB stuff
-client = MongoClient('localhost', 7000)
-db = client.dirserver_database
-files = db.files_collection
-machines = db.machines_collection
+files_collection = MongoClient().distrib_filesystem.ds_files
+machines_collection = MongoClient().distrib_filesystem.ds_machines
 
 # MachineID: (MachineIP, MachinePORT)
 MACHINES = {}
@@ -33,32 +31,49 @@ class DirServerFile(Resource):
     # Get file_id of requested file
     def get(self):
         filename = self.parser.parse_args()['filename']
-        if filename not in FILE_NAMES:
-            return {'message': '{} does not exist, try opening it'.format(filename)}, 404
+        try:
+            file_id = str(files_collection.find_one(
+                {'file_name': filename}
+            )['_id'])
 
-        return {'file_id': FILE_NAMES[filename]}
+        except:
+            return utils_server.file_missing_error(filename)
+
+        return {'file_id': file_id}
 
     # Create new file listing
     def post(self):
         filename = self.parser.parse_args()['filename']
-        if filename in FILE_NAMES:
+        if files_collection.find_one({'file_name': filename}):
             return {'message': '{} already exists, try reading from it'.format(filename)}, 400
 
         else:
-            file_id = len(FILE_NAMES)
-            FILE_NAMES[filename] = file_id
-            target_machine_id = utils_server.find_least_loaded_server(
-                MACHINE_LOAD)
-            FILE_LOCATIONS[file_id] = target_machine_id
-            FILE_AGE[file_id] = 1
+            target_machine_id = str(machines_collection.find_one(
+                sort=[('machine_load', ASCENDING)]
+            )['_id'])
+            files_collection.insert_one({
+                'file_name': filename,
+                'file_age': 1,
+                'machine_id': target_machine_id
+            })
+
             return '', 201
 
 
 class DirServerLocate(Resource):
     def get(self, file_id):
-        if file_id in FILE_LOCATIONS:
-            machine_id = FILE_LOCATIONS[file_id]
-            return {'machine_address': MACHINES[machine_id]}, 200
+        machine_id = files_collection.find_one(
+            {'_id': ObjectId(file_id)}
+        )['machine_id']
+        if machine_id:
+            machine_address = machines_collection.find_one(
+                {'_id': ObjectId(machine_id)}
+            )
+            print(machine_address)
+            return {
+                'machine_ip': machine_address['machine_ip'],
+                'machine_port': int(machine_address['machine_port'])
+            }, 200
 
         return {'message': '{} does not exist'.format(file_id)}, 404
 
@@ -69,16 +84,17 @@ class DirServerAge(Resource):
         self.parser.add_argument('file_age')
 
     def get(self, file_id):
-        if file_id in FILE_AGE:
-            print('File age: {}'.format(FILE_AGE[file_id]))
-            return {'file_age': FILE_AGE[file_id]}, 200
+        file_age = files_collection.find_one(
+            {'_id': ObjectId(file_id)}
+        )['file_age']
+        if file_age:
+            return {'file_age': file_age}, 200
 
         return utils_server.file_missing_error(file_id)
 
     def put(self, file_id):
         new_age = self.parser.parse_args()['file_age']
-        if file_id in FILE_AGE:
-            FILE_AGE[file_id] = new_age
+        if files_collection.update_one({'_id': ObjectId(file_id)}, {'$set': {'file_age': new_age}}):
             return '', 204
 
         return utils_server.file_missing_error(file_id)
@@ -90,21 +106,21 @@ class NodeSetup(Resource):
         machine_details = request.get_json()
         machine_ip = machine_details['ip']
         machine_port = machine_details['port']
-        machine_id = len(MACHINES)
-        MACHINES[machine_id] = (machine_ip, machine_port)
-        MACHINE_LOAD[machine_id] = 0
+        result = machines_collection.insert_one({
+            'machine_load': 0,
+            'machine_ip': machine_ip,
+            'machine_port': machine_port
+        })
         print('New machine added')
-        print('ID: {}'.format(machine_id))
+        print('ID: {}'.format(str(result.inserted_id)))
         print('IP: {}'.format(machine_ip))
         print('PORT: {}'.format(machine_port))
         print('------------')
-        print(MACHINES)
-        print(MACHINE_LOAD)
 
 
 api.add_resource(DirServerFile, '/files')
-api.add_resource(DirServerLocate, '/files/<int:file_id>/locate')
-api.add_resource(DirServerAge, '/files/<int:file_id>/age')
+api.add_resource(DirServerLocate, '/files/<string:file_id>/locate')
+api.add_resource(DirServerAge, '/files/<string:file_id>/age')
 api.add_resource(NodeSetup, '/init')
 
 if __name__ == '__main__':

@@ -7,14 +7,14 @@ OPEN_FILES = {}
 
 
 def run():
-    open_file('test')
+    # open_file('test2.txt')
+    read('test2.txt')
+    # write('test', 'This is a new test from client 1')
     # read('test')
-    write('test', 'This is a new test from client 1')
-    read('test')
 
-    sleep(15)
+    # sleep(15)
 
-    write('test', 'This is a cache invalidation test')
+    # write('test', 'This is a cache invalidation test')
 
 
 # Creates file on server if it doesn't already exist
@@ -46,17 +46,19 @@ def read(filename):
     else:
         print('Cache miss')
         file_id = utils.get_file_id(filename)
-        machine_address = utils.get_file_location(file_id)
-        text = utils.read_from_node(machine_address, file_id)
-        utils.create_cached_copy(filename, text)
-        OPEN_FILES[file_id] = utils.get_file_age(file_id)
-        print(text)
+        if file_id:
+            machine_address = utils.get_file_location(file_id)
+            if machine_address:
+                text = utils.read_from_node(machine_address, file_id)
+                utils.create_cached_copy(filename, text)
+                OPEN_FILES[file_id] = utils.get_file_age(file_id)
+                print(text)
 
 
 # Sends text to file on server or cached version. Currently overwrites entire file
 def write(filename, changes):
     file_id = utils.get_file_id(filename)
-    if file_id is not None:
+    if file_id:
         remote_age = utils.get_file_age(file_id)
         if remote_age > OPEN_FILES[file_id]:
             print('Cache invalid')
