@@ -4,32 +4,36 @@ import requests
 
 from flask import Flask, request
 from flask_restful import Resource, Api
+from pymongo import MongoClient
+from bson import ObjectId
 import utils_server
 
 app = Flask(__name__)
 api = Api(app)
+files_collection = MongoClient().distrib_filesystem.node_files
 
 DS_ADDRESS = ('127.0.0.1', 5000)
 
 
 class FileServer(Resource):
     def get(self, file_id):
-        filename = utils_server.convert_file_id(file_id)
-        with open(filename, 'r') as in_file:
-            file_text = in_file.read()
+        file_text = files_collection.find_one(
+            {'_id': ObjectId(file_id)}
+        )['file_text']
 
         return {'file': file_text}, 200
 
     def post(self, file_id):
         new_text = request.get_json()['data']
-        filename = utils_server.convert_file_id(file_id)
-        with open(filename, 'w') as out_file:
-            out_file.write(new_text)
-
+        files_collection.update_one(
+            {'_id': ObjectId(file_id)},
+            {'$set': {'_id': ObjectId(file_id), 'file_text': new_text}},
+            upsert=True
+        )
         return '', 204
 
 
-api.add_resource(FileServer, '/<int:file_id>')
+api.add_resource(FileServer, '/<string:file_id>')
 
 if __name__ == '__main__':
     if len(sys.argv) == 3:
