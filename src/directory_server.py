@@ -93,9 +93,9 @@ class DirServerAge(Resource):
         return utils_server.file_missing_error(file_id)
 
 
-class NodeSetup(Resource):
-    # Setup newly instantiated node
+class NodeConfig(Resource):
     def post(self):
+        # Setup newly connected node
         machine_details = request.get_json()
         machine_ip = machine_details['ip']
         machine_port = machine_details['port']
@@ -110,11 +110,29 @@ class NodeSetup(Resource):
         print('PORT: {}'.format(machine_port))
         print('------------')
 
+    def delete(self):
+        # Remove disconnected node
+        machine_details = request.get_json()
+        machine_ip = machine_details['ip']
+        machine_port = machine_details['port']
+        machine_id = str(machines_collection.find_one(
+            {'machine_ip': machine_ip, 'machine_port': machine_port}
+        )['_id'])
+
+        files_collection.delete_many({'machine_id': machine_id})
+        machines_collection.delete_one({'_id': ObjectId(machine_id)})
+
+        print('Machine disconnected')
+        print('ID: {}'.format(machine_id))
+        print('IP: {}'.format(machine_ip))
+        print('PORT: {}'.format(machine_port))
+        print('------------')
+
 
 api.add_resource(DirServerFile, '/files')
 api.add_resource(DirServerLocate, '/files/<string:file_id>/locate')
 api.add_resource(DirServerAge, '/files/<string:file_id>/age')
-api.add_resource(NodeSetup, '/init')
+api.add_resource(NodeConfig, '/config')
 
 if __name__ == '__main__':
     app.run(debug=True)

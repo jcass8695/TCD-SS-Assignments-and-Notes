@@ -12,7 +12,7 @@ app = Flask(__name__)
 api = Api(app)
 files_collection = MongoClient().distrib_filesystem.node_files
 
-DS_ADDRESS = ('127.0.0.1', 5000)
+DS_ADDR = ('127.0.0.1', 5000)
 
 
 class FileServer(Resource):
@@ -41,10 +41,17 @@ if __name__ == '__main__':
         if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
             print('Initing node')
             requests.post(
-                utils_server.url_builder(DS_ADDRESS[0], DS_ADDRESS[1], 'init'),
+                utils_server.url_builder(DS_ADDR[0], DS_ADDR[1], 'config'),
                 json={'ip': sys.argv[1], 'port': sys.argv[2]}
             )
 
         app.run(debug=True, host=sys.argv[1], port=int(sys.argv[2]))
+        requests.delete(
+            utils_server.url_builder(DS_ADDR[0], DS_ADDR[1], 'config'),
+            json={'ip': sys.argv[1], 'port': sys.argv[2]}
+        )
+
+        # Catastrophic delete EVERYTHING if node goes down! (Purposeful)
+        files_collection.delete_many({})
     else:
         print('Please supply an IP and Port')
