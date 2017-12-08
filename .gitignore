@@ -105,6 +105,7 @@ ENV/
 
 # random
 **.txt
+client_api_test.py
 
 # mongo
 /db
