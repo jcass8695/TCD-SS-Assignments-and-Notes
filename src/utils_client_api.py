@@ -1,4 +1,3 @@
-from os import remove
 import requests
 
 
@@ -74,22 +73,7 @@ def release_file_lock(file_id):
     requests.delete('http://127.0.0.1:6000/{}'.format(file_id))
 
 
-def create_cached_copy(filename, data):
-    with open(filename + '.txt', 'w') as cache_file:
-        cache_file.write(data)
-
-
-def cached_copy_exists(filename):
-    try:
-        open(filename + '.txt', 'r')
-    except FileNotFoundError:
-        return False
-
-    return True
-
-
 def update_cache(file_id):
-    # Downloads a local copy of the remote's version of the file
     machine_address = get_file_location(file_id)
     new_text = read_from_node(machine_address, file_id),
     print(
@@ -98,7 +82,7 @@ def update_cache(file_id):
         sep='\n'
     )
 
-    # Manually merge remote and local
+    # Cached data will be set to this
     print('Enter your changes and press Enter when done')
     new_cache_text = input()
     return new_cache_text

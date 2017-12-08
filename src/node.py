@@ -27,7 +27,7 @@ class FileServer(Resource):
         new_text = request.get_json()['data']
         files_collection.update_one(
             {'_id': ObjectId(file_id)},
-            {'$set': {'_id': ObjectId(file_id), 'file_text': new_text}},
+            {'$set': {'file_text': new_text}},
             upsert=True
         )
         return '', 204

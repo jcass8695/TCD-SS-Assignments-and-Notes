@@ -64,13 +64,13 @@ def write(filename, changes):
             if remote_age > cache_age:
                 print('Cache invalid')
                 new_text = utils.update_cache(file_id)
-                print('Call write again with the new changes')
                 cache_collection.update_one(
                     {'file_name': filename},
                     {'$set': {'cached_text': new_text, 'cache_age': remote_age + 1}}
                 )
 
-                return
+                print('Cache revalidated')
+                return write(filename, new_text)
 
         except TypeError:
             # File being written to is not cached
