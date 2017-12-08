@@ -4,12 +4,11 @@ import requests
 import utils_client_api as utils
 
 cache_collection = MongoClient().distrib_filesystem.api_files
-# FileID: FileAge
-OPEN_FILES = {}
-
 
 # Creates file on server if it doesn't already exist
-def open_file(filename):
+
+
+def create(filename):
     resp = requests.post(
         'http://127.0.0.1:5000/files',
         json={'filename': filename}
@@ -51,7 +50,7 @@ def read(filename):
 
 
 # Sends text to file on server
-def write(filename, changes):
+def update(filename, changes):
     file_id = utils.get_file_id(filename)
     if file_id:
         try:
@@ -70,7 +69,7 @@ def write(filename, changes):
                 )
 
                 print('Cache revalidated')
-                return write(filename, new_text)
+                return update(filename, new_text)
 
         except TypeError:
             # File being written to is not cached
