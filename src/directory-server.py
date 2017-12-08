@@ -10,19 +10,7 @@ api = Api(app)
 files_collection = MongoClient().distrib_filesystem.ds_files
 machines_collection = MongoClient().distrib_filesystem.ds_machines
 
-# MachineID: (MachineIP, MachinePORT)
-MACHINES = {}
-# MachineID: Num Files on Machine
-MACHINE_LOAD = {}
-# FileName: FileID
-FILE_NAMES = {}
-# FileID: MachineID
-FILE_LOCATIONS = {}
-# FileID: FileAge
-FILE_AGE = {}
 
-
-# Returns file_id's and creates new File's
 class DirServerFile(Resource):
     def __init__(self):
         self.parser = reqparse.RequestParser()
