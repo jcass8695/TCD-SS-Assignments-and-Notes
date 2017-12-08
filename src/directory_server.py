@@ -75,10 +75,6 @@ class DirServerLocate(Resource):
 
 
 class DirServerAge(Resource):
-    def __init__(self):
-        self.parser = reqparse.RequestParser()
-        self.parser.add_argument('new_age')
-
     def get(self, file_id):
         try:
             file_age = files_collection.find_one(
@@ -91,8 +87,7 @@ class DirServerAge(Resource):
             return utils_server.file_missing_error(file_id)
 
     def put(self, file_id):
-        new_age = self.parser.parse_args()['new_age']
-        if files_collection.update_one({'_id': ObjectId(file_id)}, {'$set': {'file_age': new_age}}):
+        if files_collection.update_one({'_id': ObjectId(file_id)}, {'$inc': {'file_age': 1}}):
             return '', 204
 
         return utils_server.file_missing_error(file_id)
