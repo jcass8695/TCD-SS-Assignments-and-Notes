@@ -16,8 +16,11 @@ class DirServerFile(Resource):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('filename')
 
-    # Get file_id of requested file
     def get(self):
+        '''
+        Returns ID of requested file name
+        '''
+
         filename = self.parser.parse_args()['filename']
         try:
             file_id = str(files_collection.find_one(
@@ -29,8 +32,11 @@ class DirServerFile(Resource):
 
         return {'file_id': file_id}
 
-    # Create new file listing
     def post(self):
+        '''
+        Creates a new file
+        '''
+
         filename = self.parser.parse_args()['filename']
         result = files_collection.find_one({'file_name': filename})
         if result:
@@ -38,6 +44,7 @@ class DirServerFile(Resource):
 
         else:
             try:
+                # Find the least loaded machine
                 target_machine_id = str(machines_collection.find_one(
                     sort=[('machine_load', ASCENDING)]
                 )['_id'])
@@ -48,8 +55,14 @@ class DirServerFile(Resource):
                     'machine_id': target_machine_id
                 })
 
+                machines_collection.update_one(
+                    {'_id', ObjectId(target_machine_id)},
+                    {'$inc': {'machine_load': 1}}
+                )
+
                 return '', 201
 
+            # TODO WHY IS THERE A TYPE ERROR WHEN DELETING THEN INITING A SERVER
             except TypeError:
                 return utils_server.no_servers_error()
 
