@@ -104,7 +104,6 @@ ENV/
 .vscode
 
 # random
-**.txt
 client_api_test.py
 
 # mongo
