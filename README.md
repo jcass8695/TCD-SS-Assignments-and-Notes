@@ -20,3 +20,13 @@ On a write operation from the client, the client must get the file location from
 Files can be cached for quicker read and write times. On the initial read of a new file, the files text and file age will be pulled from the FS over the network. The file text and age will be entered into the clients local MongoDB database, simulating a cached copy. All reads are now redirected to this cached copy
 
 On a write, if the file being written to is cached, the client API will request the remote file age from the DS. The cache is invalidated if the local copy is older than the remote copy. In this situation, the client is requested to do a manual merge and the new changes are attempted to be written again.
+
+## How to run
+This RESTful file system is built on the Flask framework for Python. Due to the fact that Flask cannot be run as a daemon (in the background) easily or unless pushing to a production environment, you will need a program like tmux or a tab-able command line to run the system. There is a run script for each component of the system. They shoud be run in the order
+
+``` bash
+. db_start.sh
+. ds_start.sh
+. ls_start.sh
+. node_start.sh
+```
