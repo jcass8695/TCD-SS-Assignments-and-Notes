@@ -16,6 +16,34 @@ function plotFrance() {
     })
 }
 
+function getMinMaxSurvivors(minardData) {
+    min = Number.MAX_VALUE
+    max = Number.MIN_VALUE
+
+    minardData.forEach(function (item, index, array) {
+        survivors = parseInt(item.SURV)
+        if (survivors < min) { min = survivors }
+
+        if (survivors > max) { max = survivors }
+    })
+
+    return [min, max]
+}
+
+function getMinMaxTemp(minardData) {
+    min = Number.MAX_VALUE
+    max = 0
+
+    minardData.forEach(function (item, index, array) {
+        temp = parseInt(item.TEMP)
+        if (temp < min) { min = temp }
+
+        if (temp > max) { max = temp }
+    })
+
+    return [min, max]
+}
+
 function plotMinardsMap() {
     var journeyGeoJson = {
         'type': 'FeatureCollection',
@@ -27,7 +55,9 @@ function plotMinardsMap() {
             },
             'properties': {
                 'division': '1',
-                'direction': 'A'
+                'direction': 'A',
+                'survivors': 0,
+                'temp': 0
             }
         }, {
             'type': 'Feature',
@@ -37,7 +67,9 @@ function plotMinardsMap() {
             },
             'properties': {
                 'division': '1',
-                'direction': 'R'
+                'direction': 'R',
+                'survivors': 0,
+                'temp': 0
             }
         }, {
             'type': 'Feature',
@@ -47,7 +79,9 @@ function plotMinardsMap() {
             },
             'properties': {
                 'division': '2',
-                'direction': 'A'
+                'direction': 'A',
+                'survivors': 0,
+                'temp': 0
             }
         }, {
             'type': 'Feature',
@@ -57,7 +91,9 @@ function plotMinardsMap() {
             },
             'properties': {
                 'division': '2',
-                'direction': 'R'
+                'direction': 'R',
+                'survivors': 0,
+                'temp': 0
             }
         }, {
             'type': 'Feature',
@@ -67,7 +103,9 @@ function plotMinardsMap() {
             },
             'properties': {
                 'division': '3',
-                'direction': 'A'
+                'direction': 'A',
+                'survivors': 0,
+                'temp': 0
             }
         }, {
             'type': 'Feature',
@@ -77,7 +115,9 @@ function plotMinardsMap() {
             },
             'properties': {
                 'division': '3',
-                'direction': 'R'
+                'direction': 'R',
+                'survivors': 0,
+                'temp': 0
             }
         }, {
             'type': 'Feature',
@@ -86,7 +126,9 @@ function plotMinardsMap() {
                 'coordinates': []
             },
             'properties': {
-                'connection': '1'
+                'connection': '1',
+                'survivors': 0,
+                'temp': 0
             }
         }, {
             'type': 'Feature',
@@ -95,7 +137,9 @@ function plotMinardsMap() {
                 'coordinates': []
             },
             'properties': {
-                'connection': '2'
+                'connection': '2',
+                'survivors': 0,
+                'temp': 0
             }
         }, {
             'type': 'Feature',
@@ -104,7 +148,9 @@ function plotMinardsMap() {
                 'coordinates': []
             },
             'properties': {
-                'connection': '3'
+                'connection': '3',
+                'survivors': 0,
+                'temp': 0
             }
         }]
     }
@@ -137,34 +183,54 @@ function plotMinardsMap() {
                 parseFloat(item.LATP),
             ])
 
-            // HACK
+            feature.properties.survivors = parseInt(item.SURV);
+            feature.properties.temp = parseInt(item.TEMP);
+
+            // HACK for connecting the A and R lines
             if (index == 14) {
-                console.log(item)
                 feature = journeyGeoJson.features.find(function (obj) { return obj.properties.connection === '1' })
                 feature.geometry.coordinates.push(
                     [parseFloat(item.LONP), parseFloat(item.LATP)],
                     [parseFloat(array[index + 1].LONP), parseFloat(array[index + 1].LATP)]
                 )
+
+                feature.properties.survivors = parseInt(item.SURV);
+                feature.properties.temp = parseInt(item.TEMP);
             }
 
             else if (index == 31) {
-                console.log(item)
                 feature = journeyGeoJson.features.find(function (obj) { return obj.properties.connection === '2' })
                 feature.geometry.coordinates.push(
                     [parseFloat(item.LONP), parseFloat(item.LATP)],
                     [parseFloat(array[index + 1].LONP), parseFloat(array[index + 1].LATP)]
                 )
+
+                feature.properties.survivors = parseInt(item.SURV);
+                feature.properties.temp = parseInt(item.TEMP);
             }
 
             else if (index == 44) {
-                console.log(item)
                 feature = journeyGeoJson.features.find(function (obj) { return obj.properties.connection === '3' })
                 feature.geometry.coordinates.push(
                     [parseFloat(item.LONP), parseFloat(item.LATP)],
                     [parseFloat(array[index + 1].LONP), parseFloat(array[index + 1].LATP)]
-                )
+                );
+
+                feature.properties.survivors = parseInt(item.SURV);
+                feature.properties.temp = parseInt(item.TEMP);
             }
+
         });
+
+        // Get min max survivors and temperature for scaling
+        surv = getMinMaxSurvivors(d)
+        minSurv = surv[0]
+        maxSurv = surv[1]
+        temp = getMinMaxTemp(d)
+        minTemp = temp[0]
+        maxTemp = temp[1]
+
+        var colorSurv = d3.interpolateRgb('#ff1e00', '#ff8400')
 
         var canvas = d3.select('.paths').append('svg')
             .attr('width', width)
@@ -179,15 +245,10 @@ function plotMinardsMap() {
         var pathJourney = d3.geoPath().projection(projJourney);
 
         canvas.append('path')
-            .datum(citiesGeoJson)
-            .attr('d', pathCities)
-            .attr('fill', 'blue');
-
-        canvas.append('path')
             .datum(journeyGeoJson.features.find(function (obj) { return (obj.properties.division === '1' && obj.properties.direction === 'A') }))
             .attr('d', pathJourney)
-            .attr('stroke', 'blue')
-            .attr('stroke-width', 6)
+            .attr('stroke', function (d) { return colorSurv((d.properties.surv / maxSurv)) })
+            .attr('stroke-width', 10)
             .attr('fill-opacity', 0.0);
 
         canvas.append('path')
@@ -195,14 +256,14 @@ function plotMinardsMap() {
             .attr('d', pathJourney)
             .attr('stroke', 'blue')
             .attr('stroke-dasharray', ('3', '3'))
-            .attr('stroke-width', 6)
+            .attr('stroke-width', 10)
             .attr('fill-opacity', 0.0);
 
         canvas.append('path')
             .datum(journeyGeoJson.features.find(function (obj) { return (obj.properties.division === '2' && obj.properties.direction === 'A') }))
             .attr('d', pathJourney)
             .attr('stroke', 'orange')
-            .attr('stroke-width', 3)
+            .attr('stroke-width', 6)
             .attr('fill-opacity', 0.0);
 
         canvas.append('path')
@@ -210,14 +271,14 @@ function plotMinardsMap() {
             .attr('d', pathJourney)
             .attr('stroke', 'orange')
             .attr('stroke-dasharray', ('3', '3'))
-            .attr('stroke-width', 3)
+            .attr('stroke-width', 6)
             .attr('fill-opacity', 0.0);
 
         canvas.append('path')
             .datum(journeyGeoJson.features.find(function (obj) { return (obj.properties.division === '3' && obj.properties.direction === 'A') }))
             .attr('d', pathJourney)
             .attr('stroke', 'green')
-            .attr('stroke-width', 3)
+            .attr('stroke-width', 6)
             .attr('fill-opacity', 0.0);
 
         canvas.append('path')
@@ -225,37 +286,42 @@ function plotMinardsMap() {
             .attr('d', pathJourney)
             .attr('stroke', 'green')
             .attr('stroke-dasharray', ('3', '3'))
-            .attr('stroke-width', 3)
+            .attr('stroke-width', 6)
             .attr('fill-opacity', 0.0);
 
         canvas.append('path')
             .datum(journeyGeoJson.features.find(function (obj) { return obj.properties.connection === '1' }))
             .attr('d', pathJourney)
             .attr('stroke', 'blue')
-            .attr('stroke-width', 6)
+            .attr('stroke-width', 10)
             .attr('fill-opacity', 0.0)
 
         canvas.append('path')
             .datum(journeyGeoJson.features.find(function (obj) { return obj.properties.connection === '2' }))
             .attr('d', pathJourney)
             .attr('stroke', 'orange')
-            .attr('stroke-width', 3)
+            .attr('stroke-width', 6)
             .attr('fill-opacity', 0.0)
 
         canvas.append('path')
             .datum(journeyGeoJson.features.find(function (obj) { return obj.properties.connection === '3' }))
             .attr('d', pathJourney)
             .attr('stroke', 'green')
-            .attr('stroke-width', 3)
+            .attr('stroke-width', 6)
             .attr('fill-opacity', 0.0)
+
+        canvas.append('path')
+            .datum(citiesGeoJson)
+            .attr('d', pathCities)
+            .attr('fill', 'blue');
 
         var label = canvas.selectAll('text')
             .data(citiesGeoJson.features)
             .enter()
             .append('text')
             .attr('transform', function (d) { return "translate(" + pathCities.centroid(d) + ")"; })
-            .attr('dy', -3) // vertical offset
-            .attr('dx', 3) // horizontal offset
+            .attr('dy', 7) // vertical offset
+            .attr('dx', 5) // horizontal offset
             .text(function (d) { return d.properties.name; });
     });
 }
