@@ -1,14 +1,11 @@
 var width = 1600
 var height = 500
 
-function france() {
+function plotFrance() {
     d3.json('../data/france.json', function (data) {
-        var canvas = d3.select('.paths').append('svg')
-            .attr('width', width)
-            .attr('height', height);
-
+        var canvas = d3.select('.paths').select('svg')
         var centroid = d3.geoCentroid(data)
-        var proj = d3.geoMercator().center(centroid).scale(2000).translate([width / 2, height / 2])
+        var proj = d3.geoMercator().center(centroid).scale(4000).translate([width / 2, height / 2])
         var path = d3.geoPath().projection(proj)
 
         canvas.append('path')
@@ -19,7 +16,7 @@ function france() {
     })
 }
 
-function getCities() {
+function plotMinardsMap() {
     var journeyGeoJson = {
         'type': 'FeatureCollection',
         'features': [{
@@ -252,17 +249,13 @@ function getCities() {
             .attr('stroke-width', 3)
             .attr('fill-opacity', 0.0)
 
-        canvas.selectAll('path')
+        var label = canvas.selectAll('text')
             .data(citiesGeoJson.features)
             .enter()
             .append('text')
-            .attr('transform', function (d) {
-                return 'translate(' + projCities(d.geometry.coordinates) + ')';
-            })
+            .attr('transform', function (d) { return "translate(" + pathCities.centroid(d) + ")"; })
             .attr('dy', -3) // vertical offset
             .attr('dx', 3) // horizontal offset
-            .text(function (d) {
-                return d.properties.name
-            })
+            .text(function (d) { return d.properties.name; });
     });
 }
