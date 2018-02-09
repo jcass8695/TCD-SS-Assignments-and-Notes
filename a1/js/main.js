@@ -1,21 +1,6 @@
 var width = 1600
 var height = 500
 
-function plotFrance() {
-    d3.json('../data/france.json', function (data) {
-        var canvas = d3.select('.paths').select('svg')
-        var centroid = d3.geoCentroid(data)
-        var proj = d3.geoMercator().center(centroid).scale(4000).translate([width / 2, height / 2])
-        var path = d3.geoPath().projection(proj)
-
-        canvas.append('path')
-            .datum(data)
-            .attr('d', path)
-            .attr('fill', 'blue')
-            .attr('fill-opacity', 0.3)
-    })
-}
-
 function getMinMaxSurvivors(minardData) {
     min = Number.MAX_VALUE
     max = Number.MIN_VALUE
@@ -47,112 +32,7 @@ function getMinMaxTemp(minardData) {
 function plotMinardsMap() {
     var journeyGeoJson = {
         'type': 'FeatureCollection',
-        'features': [{
-            'type': 'Feature',
-            'geometry': {
-                'type': 'LineString',
-                'coordinates': []
-            },
-            'properties': {
-                'division': '1',
-                'direction': 'A',
-                'survivors': 0,
-                'temp': 0
-            }
-        }, {
-            'type': 'Feature',
-            'geometry': {
-                'type': 'LineString',
-                'coordinates': []
-            },
-            'properties': {
-                'division': '1',
-                'direction': 'R',
-                'survivors': 0,
-                'temp': 0
-            }
-        }, {
-            'type': 'Feature',
-            'geometry': {
-                'type': 'LineString',
-                'coordinates': []
-            },
-            'properties': {
-                'division': '2',
-                'direction': 'A',
-                'survivors': 0,
-                'temp': 0
-            }
-        }, {
-            'type': 'Feature',
-            'geometry': {
-                'type': 'LineString',
-                'coordinates': []
-            },
-            'properties': {
-                'division': '2',
-                'direction': 'R',
-                'survivors': 0,
-                'temp': 0
-            }
-        }, {
-            'type': 'Feature',
-            'geometry': {
-                'type': 'LineString',
-                'coordinates': []
-            },
-            'properties': {
-                'division': '3',
-                'direction': 'A',
-                'survivors': 0,
-                'temp': 0
-            }
-        }, {
-            'type': 'Feature',
-            'geometry': {
-                'type': 'LineString',
-                'coordinates': []
-            },
-            'properties': {
-                'division': '3',
-                'direction': 'R',
-                'survivors': 0,
-                'temp': 0
-            }
-        }, {
-            'type': 'Feature',
-            'geometry': {
-                'type': 'LineString',
-                'coordinates': []
-            },
-            'properties': {
-                'connection': '1',
-                'survivors': 0,
-                'temp': 0
-            }
-        }, {
-            'type': 'Feature',
-            'geometry': {
-                'type': 'LineString',
-                'coordinates': []
-            },
-            'properties': {
-                'connection': '2',
-                'survivors': 0,
-                'temp': 0
-            }
-        }, {
-            'type': 'Feature',
-            'geometry': {
-                'type': 'LineString',
-                'coordinates': []
-            },
-            'properties': {
-                'connection': '3',
-                'survivors': 0,
-                'temp': 0
-            }
-        }]
+        'features': []
     }
 
     citiesGeoJson = {
@@ -161,6 +41,11 @@ function plotMinardsMap() {
     }
 
     d3.json('../data/minard-data.json', function (d) {
+        // Get min max survivors for scaling
+        surv = getMinMaxSurvivors(d)
+        minSurv = surv[0]
+        maxSurv = surv[1]
+
         d.forEach(function (item, index, array) {
             // Create Cities points
             if (item.LATC != "" && item.LONC != "") {
@@ -176,65 +61,28 @@ function plotMinardsMap() {
                 })
             }
 
-            // Create Lines between points
-            var feature = journeyGeoJson.features.find(function (obj) { return (obj.properties.division === item.DIV && obj.properties.direction === item.DIR) })
-            feature.geometry.coordinates.push([
-                parseFloat(item.LONP),
-                parseFloat(item.LATP),
-            ])
-
-            feature.properties.survivors = parseInt(item.SURV);
-            feature.properties.temp = parseInt(item.TEMP);
-
-            // HACK for connecting the A and R lines
-            if (index == 14) {
-                feature = journeyGeoJson.features.find(function (obj) { return obj.properties.connection === '1' })
-                feature.geometry.coordinates.push(
-                    [parseFloat(item.LONP), parseFloat(item.LATP)],
-                    [parseFloat(array[index + 1].LONP), parseFloat(array[index + 1].LATP)]
-                )
-
-                feature.properties.survivors = parseInt(item.SURV);
-                feature.properties.temp = parseInt(item.TEMP);
+            if (index < array.length - 1) {
+                journeyGeoJson.features.push({
+                    'type': 'Feature',
+                    'geometry': {
+                        'type': 'LineString',
+                        'coordinates': [[parseFloat(item.LONP), parseFloat(item.LATP)], [parseFloat(array[index + 1].LONP), parseFloat(array[index + 1].LATP)]]
+                    },
+                    'properties': {
+                        'div': item.DIV,
+                        'dir': item.DIR,
+                        'surv': item.SURV,
+                        'temp': item.TEMP
+                    }
+                })
             }
-
-            else if (index == 31) {
-                feature = journeyGeoJson.features.find(function (obj) { return obj.properties.connection === '2' })
-                feature.geometry.coordinates.push(
-                    [parseFloat(item.LONP), parseFloat(item.LATP)],
-                    [parseFloat(array[index + 1].LONP), parseFloat(array[index + 1].LATP)]
-                )
-
-                feature.properties.survivors = parseInt(item.SURV);
-                feature.properties.temp = parseInt(item.TEMP);
-            }
-
-            else if (index == 44) {
-                feature = journeyGeoJson.features.find(function (obj) { return obj.properties.connection === '3' })
-                feature.geometry.coordinates.push(
-                    [parseFloat(item.LONP), parseFloat(item.LATP)],
-                    [parseFloat(array[index + 1].LONP), parseFloat(array[index + 1].LATP)]
-                );
-
-                feature.properties.survivors = parseInt(item.SURV);
-                feature.properties.temp = parseInt(item.TEMP);
-            }
-
         });
-
-        // Get min max survivors and temperature for scaling
-        surv = getMinMaxSurvivors(d)
-        minSurv = surv[0]
-        maxSurv = surv[1]
-        temp = getMinMaxTemp(d)
-        minTemp = temp[0]
-        maxTemp = temp[1]
-
-        var colorSurv = d3.interpolateRgb('#ff1e00', '#ff8400')
 
         var canvas = d3.select('.paths').append('svg')
             .attr('width', width)
             .attr('height', height);
+
+        var colorScale = d3.interpolateRgb('blue', '#AFDAFF')
 
         var centroidCities = d3.geoCentroid(citiesGeoJson);
         var projCities = d3.geoMercator().center(centroidCities).scale(4000).translate([width / 3, height / 2]);
@@ -244,70 +92,34 @@ function plotMinardsMap() {
         var projJourney = d3.geoMercator().center(centroidJourney).scale(4000).translate([width / 3, height / 2]);
         var pathJourney = d3.geoPath().projection(projJourney);
 
-        canvas.append('path')
-            .datum(journeyGeoJson.features.find(function (obj) { return (obj.properties.division === '1' && obj.properties.direction === 'A') }))
+        canvas.selectAll('path')
+            .data(journeyGeoJson.features)
+            .enter()
+            .append('path')
             .attr('d', pathJourney)
-            .attr('stroke', function (d) { return colorSurv((d.properties.surv / maxSurv)) })
-            .attr('stroke-width', 10)
-            .attr('fill-opacity', 0.0);
+            .attr('stroke', function (d) {
+                var division = d.properties.div
+                var temp = d.properties.temp == '' ? minTemp : d.properties.temp
+                if (division === '1') return colorScale(temp / minTemp)
 
-        canvas.append('path')
-            .datum(journeyGeoJson.features.find(function (obj) { return (obj.properties.division === '1' && obj.properties.direction === 'R') }))
-            .attr('d', pathJourney)
-            .attr('stroke', 'blue')
-            .attr('stroke-dasharray', ('3', '3'))
-            .attr('stroke-width', 10)
-            .attr('fill-opacity', 0.0);
+                else if (division === '2') return 'orange'
 
-        canvas.append('path')
-            .datum(journeyGeoJson.features.find(function (obj) { return (obj.properties.division === '2' && obj.properties.direction === 'A') }))
-            .attr('d', pathJourney)
-            .attr('stroke', 'orange')
-            .attr('stroke-width', 6)
-            .attr('fill-opacity', 0.0);
+                else return 'green'
+            })
+            .attr('stroke-width', function (d) {
+                var survivors = parseInt(d.properties.surv)
+                if (d.properties.div === '1') return (15 * survivors / 340000)
 
-        canvas.append('path')
-            .datum(journeyGeoJson.features.find(function (obj) { return (obj.properties.division === '2' && obj.properties.direction === 'R') }))
-            .attr('d', pathJourney)
-            .attr('stroke', 'orange')
-            .attr('stroke-dasharray', ('3', '3'))
-            .attr('stroke-width', 6)
-            .attr('fill-opacity', 0.0);
+                else if (d.properties.div === '2') return (8 * survivors / 60000)
 
-        canvas.append('path')
-            .datum(journeyGeoJson.features.find(function (obj) { return (obj.properties.division === '3' && obj.properties.direction === 'A') }))
-            .attr('d', pathJourney)
-            .attr('stroke', 'green')
-            .attr('stroke-width', 6)
-            .attr('fill-opacity', 0.0);
+                else return (8 * survivors / 22000)
+            })
+            .attr('stroke-dasharray', function (d) {
+                if (d.properties.dir === 'R') return [3, 3]
 
-        canvas.append('path')
-            .datum(journeyGeoJson.features.find(function (obj) { return (obj.properties.division === '3' && obj.properties.direction === 'R') }))
-            .attr('d', pathJourney)
-            .attr('stroke', 'green')
-            .attr('stroke-dasharray', ('3', '3'))
-            .attr('stroke-width', 6)
-            .attr('fill-opacity', 0.0);
-
-        canvas.append('path')
-            .datum(journeyGeoJson.features.find(function (obj) { return obj.properties.connection === '1' }))
-            .attr('d', pathJourney)
-            .attr('stroke', 'blue')
-            .attr('stroke-width', 10)
-            .attr('fill-opacity', 0.0)
-
-        canvas.append('path')
-            .datum(journeyGeoJson.features.find(function (obj) { return obj.properties.connection === '2' }))
-            .attr('d', pathJourney)
-            .attr('stroke', 'orange')
-            .attr('stroke-width', 6)
-            .attr('fill-opacity', 0.0)
-
-        canvas.append('path')
-            .datum(journeyGeoJson.features.find(function (obj) { return obj.properties.connection === '3' }))
-            .attr('d', pathJourney)
-            .attr('stroke', 'green')
-            .attr('stroke-width', 6)
+                else return null
+            })
+            .attr('stroke-opacity', 0.75)
             .attr('fill-opacity', 0.0)
 
         canvas.append('path')
