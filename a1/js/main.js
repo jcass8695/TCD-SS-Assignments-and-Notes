@@ -45,7 +45,9 @@ function plotMinardsMap() {
         surv = getMinMaxSurvivors(d)
         minSurv = surv[0]
         maxSurv = surv[1]
-
+        temp = getMinMaxTemp(d)
+        minTemp = temp[0]
+        maxTemp = temp[1]
         d.forEach(function (item, index, array) {
             // Create Cities points
             if (item.LATC != "" && item.LONC != "") {
@@ -136,4 +138,65 @@ function plotMinardsMap() {
             .attr('dx', 5) // horizontal offset
             .text(function (d) { return d.properties.name; });
     });
+}
+
+function basicShapes() {
+    var canvas = d3.select('.basic-shapes').append('svg')
+        .attr('width', width)
+        .attr('height', height)
+
+    var centres = [[40, 40], [160, 160], [280, 280], [160, 40], [40, 280], [280, 160]]
+    var lineGenerator = d3.line().curve(d3.curveCardinal);
+    var arcGenerator = d3.arc();
+    arcGenerator
+        .innerRadius(20)
+        .outerRadius(100)
+
+    canvas.selectAll('circle')
+        .data(centres)
+        .enter()
+        .append('circle')
+        .attr('cy', function (d) { return d[1] })
+        .attr('cx', function (d) { return d[0] })
+        .attr('r', function (d) { return 50 * Math.random() + 5 })
+        .attr('stroke', 'red')
+        .attr('stroke-width', 5)
+        .attr('fill', 'blue')
+        .attr('fill-opacity', Math.random())
+        .attr('transform', 'translate(' + 500 + ',' + 100 + ')')
+    canvas.selectAll('rect')
+        .data([[100, -1], [100, 1]])
+        .enter()
+        .append('rect')
+        .attr('width', d => d[0])
+        .attr('height', d => d[0])
+        .attr('fill', 'orange')
+        .attr('fill-opacity', d => Math.random())
+        .attr('transform', (d, i) => `translate(${d[1] * 300 + 660 - i * d[0]}, ${250}) rotate(${360 * Math.random()}, ${d[0] / 2}, ${d[0] / 2})`)
+
+    canvas.selectAll('path')
+        .data(centres)
+        .enter()
+        .append('path')
+        .attr('d', lineGenerator(centres))
+        .attr('stroke', 'green')
+        .attr('stroke-width', 5)
+        .attr('fill', 'none')
+        .attr('fill-opacity', Math.random())
+        .attr('transform', 'translate(' + 500 + ',' + 100 + ')')
+
+    canvas.selectAll('g')
+        .data([[0.125, 0.875]])
+        .enter()
+        .append('path')
+        .attr('d', function (d) {
+            console.log(d)
+            return arcGenerator({
+                startAngle: d[0] * 2 * Math.PI,
+                endAngle: d[1] * 2 * Math.PI,
+            });
+        })
+        .attr('transform', 'translate(' + (500 + 160) + ',' + (100 + 160) + ')')
+        .attr('fill', 'orange')
+        .attr('fill-opacity', 0.6)
 }

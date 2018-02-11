@@ -1,2 +1,7 @@
 bower_components
 node_modules
+report.aux
+*.synctex.gz
+*.log
+*.fls
+*.fdb_latexmk
