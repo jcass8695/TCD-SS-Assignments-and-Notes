@@ -57,12 +57,14 @@ app.get('/refresh', (request, response) => {
 
 app.get('/artists', (request, response) => {
     accessToken = JSON.parse(fs.readFileSync('./tokens.json')).access_token;
-    url = 'https://api.spotify.com/v1/users/eternal_atom/playlists/5nRAlBCYZlJlRJGZU2MaOM/tracks/?fields=items(track(artists(name))),next'
-    return getArtists(accessToken, url, {})
+    url = 'https://api.spotify.com/v1/users/eternal_atom/playlists/5nRAlBCYZlJlRJGZU2MaOM/tracks/?fields=items(track(artists(name,id))),next'
+    // Tiers are lower: count is 1, middle: count is 2-10, upper: 11+
+    return getArtists(accessToken, url, { 'artists': [] })
         .then(artistsNames => {
             return fs.writeFileSync('./artists.json', artistsNames)
         })
         .finally(() => {
+            parseTiers();
             response.send('Parsed artists')
         })
 });
@@ -89,11 +91,23 @@ function parseArtists(unparsedArtists, parsedArtists) {
     for (var i = 0; i < itemsArray.length; i++) {
         artistsArray = itemsArray[i].track.artists
         for (var j = 0; j < artistsArray.length; j++) {
-            name = artistsArray[j].name
-            if (name in parsedArtists) {
-                parsedArtists[name]++;
+            var name = artistsArray[j].name;
+            var id = artistsArray[j].id;
+            var location = null;
+            for (var k = 0; k < parsedArtists.artists.length; k++) {
+                if (parsedArtists.artists[k].name === name) {
+                    location = k;
+                }
+            }
+
+            if (location != null) {
+                parsedArtists.artists[location].count += 1;
             } else {
-                parsedArtists[name] = 1;
+                parsedArtists.artists.push({
+                    'name': name,
+                    'id': id,
+                    'count': 1
+                });
             }
         }
     }
@@ -145,4 +159,22 @@ function refreshAccessToken(refreshToken) {
         .catch(err => {
             console.log(err)
         });
+}
+
+function parseTiers() {
+    data = JSON.parse(fs.readFileSync('artists.json')).artists;
+    tieredData = { 'tier1': [], 'tier2': [], 'tier3': [] };
+    for (var i = 0; i < data.length; i++) {
+        count = data[i].count;
+        name = data[i].name;
+        if (count == 1) {
+            tieredData.tier1.push({ 'name': name, 'count': count });
+        } else if (count > 1 && count <= 10) {
+            tieredData.tier2.push({ 'name': name, 'count': count });
+        } else {
+            tieredData.tier3.push({ 'name': name, 'count': count });
+        }
+    }
+
+    fs.writeFileSync('tiered.json', JSON.stringify(tieredData));
 }
