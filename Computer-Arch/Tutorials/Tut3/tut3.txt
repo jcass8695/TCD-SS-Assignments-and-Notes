@@ -1,0 +1,86 @@
+add		r0, #4, r9			; global int g
+
+; min function unoptimized
+min:
+add		r0, r26, r16		; MOV r26 into r16
+sub		r27, r16, r0 {C}	; CMP r27 and r16
+jle		min0
+xor		r0, r0, r0			; nop
+add		r0, r27, r16
+min0:
+sub		r28, r16, r0, {C}
+jle		min1
+xor		r0, r0, r0			; nop
+add		r0, r28, r16
+min1:
+add		r0, r16, r1			; return value in global r1
+ret		r25, 0
+xor		r0, r0, r0			; nop
+
+; min function optomized
+min:
+add		r0, r26, r16		; MOV r26 into r16
+sub		r27, r16, r0 {C}	; CMP r27 and r16
+jle		min0
+xor		r0, r0, r0			; nop
+add		r0, r27, r16
+min0:
+sub		r28, r16, r0, {C}
+jle		min1
+xor		r0, r0, r0			; nop
+add		r0, r28, r16
+min1:
+ret		r25, 0
+add		r0, r16, r1			; return value in global r1
+
+; p function unoptimized
+add		r0, r9, r10
+add		r0, r26, r11
+add		r0, r27, r12
+callr	r25, min
+xor		r0, r0, r0			; nop
+add		r0, r1, r10
+add		r0, r29, r12
+callr	r25, min
+xor		r0, r0, r0			; nop
+ret		r25, 0
+xor		r0, r0, r0			; nop
+
+; p function optomized
+add		r0, r9, r10
+add		r0, r26, r11
+callr	r25, min
+add		r0, r27, r12
+add		r0, r1, r10
+callr	r25, min
+add		r0, r29, r12
+ret		r25, 0
+xor		r0, r0, r0			; nop
+
+; gcd function unoptomized
+sub		r0, r27, r0, {C}
+jne		gcd1
+xor		r0, r0, r0			; nop
+add		r0, r26, r1
+ret		r25, 0
+xor		r0, r0, r0			; nop
+gcd1:
+add		r0, r27, r10
+mod		r26, r27, r11
+callr	r25, gcd
+xor		r0, r0, r0			; nop
+ret		r25, 0
+xor		r0, r0, r0			; nop
+
+; gcd function optomized
+sub		r0, r27, r0, {C}
+jne		gcd1
+xor		r0, r0, r0			; nop
+ret		r25, 0
+add		r0, r26, r1
+gcd1:
+add		r0, r27, r10
+callr	r25, gcd
+mod		r26, r27, r11
+ret		r25, 0
+xor		r0, r0, r0			; nop

@@ -1,0 +1,8 @@
+**/.vs/*
+**/Debug/*
+*.sln
+*.vcxproj*
+**/stdafx.*
+.vscode/
+**/targetver.h
+ReadMe.txt
