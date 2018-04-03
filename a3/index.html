@@ -103,6 +103,8 @@
                     tooltip.select('.label').html(d.data.name);
                     tooltip.select('.value').html(d.value)
                     tooltip.style('display', 'block');
+                    d3.select(d)
+                        .attr('fill', 'orange');
                 });
 
                 path.on('mouseout', d => {
