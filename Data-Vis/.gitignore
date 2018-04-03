@@ -1,0 +1,15 @@
+bower_components
+node_modules
+package-lock.json
+.vscode
+*.aux
+*.synctex.gz
+*.log
+*.fls
+*.fdb_latexmk
+a3/config.js
+a3/tokens.json
+a3/template
+a3/!template/report.pdf
+a3/app.zip
+a3/*.avi
