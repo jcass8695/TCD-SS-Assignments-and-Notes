@@ -1,0 +1,15 @@
+\documentclass[12pt]{article}
+\begin{document}
+\title{Data Vis Assignment 5.2}
+\author{Jack Cassidy \\ Student Number 1432 0816}
+\date{\today}
+\maketitle
+\section*{Supported Interactions of the CThead Volume Dataset Visualization}
+I chose to discuss the supported interactions of the CThead dataset visualization. It is a visualization of a CT scan of a human head. The visualization takes a level curve type form, where the user can view a set of cross sections of the scan from the 3 different axes. It uses the following interaction operators and operands.
+\begin{itemize}
+    \item \textbf{Navigation} is supported through the use of a slider, which cycles through the cross sections of the scan for the given axis. The operand in this case is the data value space. Using the slider, the user can control the depth of the camera into the scan, which is cycling through the list of photos of the scan for the given axis in reality. The scan has been divided into 255 frames for the user to scroll through.
+
+    \item \textbf{Filtering}. The user can select, from a drop-down menu the axis on which to view the scan (x, y or z). Similar to the operand of the navigation operator, the filtration in this case operates on the data value space, specifying the range of frames to render to the screen and allow navigation through using the aforementioned slider.
+\end{itemize}
+An interaction that I feel would be useful in this visualization is navigation in the screen space. This would enable the user to zoom and pan in on frames to locate items of interest. If extended to 3D, it would allow the user to navigate over the entire CT scan of the head. To complement a navigation in the screen space interaction, a selection in the screen space could also be added. This selection could be used to highlight areas of attention or importance in the scan.
+\end{document}
